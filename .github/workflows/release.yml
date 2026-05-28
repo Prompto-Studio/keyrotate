@@ -1,12 +1,13 @@
 name: Release
 
-# Builds standalone binaries for macOS arm64, macOS x64, and Linux x64 on tag
-# push. ALL builds happen on a single ubuntu-latest runner — Bun supports
-# cross-compilation for every target via `bun build --compile --target=`, so we
-# don't pay the macos queue tax or run extra runners just to produce binaries.
+# Builds standalone binaries for macOS arm64, macOS x64, Linux x64, and
+# Windows x64 on tag push. ALL builds happen on a single ubuntu-latest runner —
+# Bun cross-compiles to every target via `bun build --compile --target=`.
 #
-# Tarballs are attached to the GitHub Release; the Formula/keyrotate.rb is
-# auto-rendered from the resulting SHA256s and attached to the release as well.
+# Outputs:
+#   - GitHub Release tarballs/zips for all 4 platforms
+#   - Auto-rendered Homebrew Formula attached to the release
+#   - npm publish of `keyrotate` + 4 platform packages
 #
 # To cut a release:
 #   bun version patch && git push && git push --tags
@@ -28,26 +29,38 @@ jobs:
         with: { bun-version: latest }
       - run: bun install --frozen-lockfile
 
-      - name: Cross-compile all three targets
+      - name: Inject version into src/cli.ts
+        env:
+          GH_REF: ${{ github.ref_name }}
+        run: |
+          v_display="${GH_REF#v}"
+          # Replace the hardcoded VERSION constant with the real tag display.
+          sed -i "s/^const VERSION = \".*\";/const VERSION = \"${v_display}\";/" src/cli.ts
+          grep "^const VERSION" src/cli.ts
+
+      - name: Cross-compile all four targets
         run: |
           mkdir -p dist
+          # POSIX targets → tar.gz (binary "keyrotate")
           for t in bun-darwin-arm64 bun-darwin-x64 bun-linux-x64; do
             short=${t#bun-}
             echo "→ building $short"
             bun build src/cli.ts --compile --target=$t --outfile dist/keyrotate
-            cd dist
-            tar -czf "../keyrotate-${short}.tar.gz" keyrotate
-            cd ..
+            cd dist && tar -czf "../keyrotate-${short}.tar.gz" keyrotate && cd ..
             rm dist/keyrotate
           done
-          ls -la keyrotate-*.tar.gz
+          # Windows target → zip (binary "keyrotate.exe")
+          echo "→ building win32-x64"
+          bun build src/cli.ts --compile --target=bun-windows-x64 --outfile dist/keyrotate.exe
+          cd dist && zip -q "../keyrotate-win32-x64.zip" keyrotate.exe && cd ..
+          rm dist/keyrotate.exe
+          ls -la keyrotate-*
 
       - name: Compute SHA256s
         id: sha
         run: |
           v_display="${GITHUB_REF_NAME#v}"
-          # Map cosmetic 00.00.NN → semver 0.NN.0 so Homebrew's version comparison
-          # can order upgrades. CLI/README still show v_display.
+          # Map cosmetic 00.00.NN → semver 0.NN.0 so Homebrew + npm semver order.
           last_seg="${v_display##*.}"; last_n=$((10#$last_seg))
           v_semver="0.${last_n}.0"
           echo "version=$v_semver"   >> $GITHUB_OUTPUT
@@ -57,6 +70,9 @@ jobs:
             echo "sha_$(echo $arch | tr - _)=$sha" >> $GITHUB_OUTPUT
             echo "$arch: $sha"
           done
+          sha_win=$(shasum -a 256 keyrotate-win32-x64.zip | awk '{print $1}')
+          echo "sha_win32_x64=$sha_win" >> $GITHUB_OUTPUT
+          echo "win32-x64: $sha_win"
 
       - name: Render Formula
         run: |
@@ -103,6 +119,7 @@ jobs:
             keyrotate-darwin-arm64.tar.gz
             keyrotate-darwin-x64.tar.gz
             keyrotate-linux-x64.tar.gz
+            keyrotate-win32-x64.zip
             Formula/keyrotate.rb
           generate_release_notes: true
           fail_on_unmatched_files: true
@@ -119,22 +136,28 @@ jobs:
           V_DISPLAY: ${{ steps.sha.outputs.v_display }}
         run: |
           set -euo pipefail
-          mkdir -p _bins/darwin-arm64 _bins/darwin-x64 _bins/linux-x64
+          mkdir -p _bins/darwin-arm64 _bins/darwin-x64 _bins/linux-x64 _bins/win32-x64
           for arch in darwin-arm64 darwin-x64 linux-x64; do
             tar -xzf "keyrotate-${arch}.tar.gz" -C "_bins/${arch}"
           done
+          unzip -q keyrotate-win32-x64.zip -d _bins/win32-x64
 
-          for pkg in npm/keyrotate npm/keyrotate-darwin-arm64 npm/keyrotate-darwin-x64 npm/keyrotate-linux-x64; do
+          # Sync version across all 5 manifests
+          for pkg in npm/keyrotate npm/keyrotate-darwin-arm64 npm/keyrotate-darwin-x64 npm/keyrotate-linux-x64 npm/keyrotate-win32-x64; do
             node -e "const f='${pkg}/package.json';const p=require('./'+f);p.version=process.env.V_SEMVER;if(p.optionalDependencies){for(const k of Object.keys(p.optionalDependencies))p.optionalDependencies[k]=process.env.V_SEMVER;}require('fs').writeFileSync(f,JSON.stringify(p,null,2)+'\n');"
           done
 
+          # POSIX binaries
           for arch in darwin-arm64 darwin-x64 linux-x64; do
             mkdir -p "npm/keyrotate-${arch}/bin"
             cp "_bins/${arch}/keyrotate" "npm/keyrotate-${arch}/bin/keyrotate"
             chmod +x "npm/keyrotate-${arch}/bin/keyrotate"
           done
+          # Windows binary
+          mkdir -p npm/keyrotate-win32-x64/bin
+          cp _bins/win32-x64/keyrotate.exe npm/keyrotate-win32-x64/bin/keyrotate.exe
 
-          for pkg in npm/keyrotate-darwin-arm64 npm/keyrotate-darwin-x64 npm/keyrotate-linux-x64 npm/keyrotate; do
+          for pkg in npm/keyrotate-darwin-arm64 npm/keyrotate-darwin-x64 npm/keyrotate-linux-x64 npm/keyrotate-win32-x64 npm/keyrotate; do
             echo "→ publishing $pkg"
             (cd "$pkg" && npm publish --access public)
           done

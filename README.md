@@ -8,6 +8,7 @@
 [![Made with Bun](https://img.shields.io/badge/runtime-Bun-fbf0df.svg)](https://bun.sh)
 [![macOS Apple Silicon](https://img.shields.io/badge/macOS-Apple%20Silicon-black?logo=apple)](#install)
 [![Linux x64](https://img.shields.io/badge/Linux-x64-yellow?logo=linux)](#install)
+[![Windows x64](https://img.shields.io/badge/Windows-x64-0078D6?logo=windows)](#on-windows)
 [![Status: alpha](https://img.shields.io/badge/status-alpha-orange.svg)](#status)
 
 **Stops you from getting halfway through an API-key rotation, breaking production, and forgetting which destinations you already updated.**
@@ -108,6 +109,37 @@ kr version                # `kr` is the short alias
 ```
 
 That's it — `keyrotate` and `kr` now work in any terminal.
+
+### On Windows
+
+Same as macOS — pick `npx` for a one-off or `npm install -g` to make it permanent. Works in PowerShell, Command Prompt, or Windows Terminal:
+
+```powershell
+# Make sure Node.js 18+ is installed (https://nodejs.org or `winget install OpenJS.NodeJS.LTS`)
+node --version
+
+# One-off
+npx keyrotate setup
+
+# Or install globally
+npm install -g keyrotate
+keyrotate version
+kr version
+```
+
+WSL2 users can use the macOS/Linux instructions instead — `npx keyrotate setup` works identically under Ubuntu/Debian WSL.
+
+Before your first rotation on Windows, install the destination CLIs (use `winget` or each tool's official MSI):
+
+```powershell
+winget install 1Password.CLI       # `op`
+winget install GitHub.CLI          # `gh`
+winget install Supabase.CLI        # `supabase`
+winget install Netlify.Netlify     # `netlify`
+winget install Fly-io.flyctl       # `flyctl`
+```
+
+Sign each one in once (`op signin`, `gh auth login`, etc.) and you're set. 1Password unlock on Windows uses Windows Hello instead of Touch ID — otherwise the flow is identical to macOS.
 
 ### Homebrew *(once the tap is published — currently in setup)*
 
