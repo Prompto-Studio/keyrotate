@@ -1,0 +1,102 @@
+# keyrotate.toml — Prompto Studio AI
+# Run any rotation with:  kr rotate <name>   (or:  keyrotate rotate <name>)
+
+[defaults]
+op_vault    = "Private"          # change to "Prompto" if you make a dedicated vault
+op_tags     = ["keyrotate", "prompto"]
+op_category = "API Credential"
+
+# ════════════════════════════════════════════════════════════════════════════
+# ROTATIONS
+# ════════════════════════════════════════════════════════════════════════════
+
+# ── Resend (transactional email + admin alerts) ────────────────────────────
+[rotations.resend-alerts]
+provider     = "resend"
+title        = "Prompto · Resend Alerts"
+secret_name  = "RESEND_API_KEY"
+destinations = ["onepassword", "github", "supabase"]
+postRotateWorkflow = ".github/workflows/test-alerts.yml"
+
+# ── OpenAI gpt-image-1 (image-edit fallback) ───────────────────────────────
+[rotations.openai]
+provider     = "openai"
+title        = "Prompto · OpenAI gpt-image-1"
+secret_name  = "OPENAI_API_KEY"
+destinations = ["onepassword", "supabase"]
+
+# ── Google Cloud (Gemini + Imagen 4 + Veo 3.1) ─────────────────────────────
+[rotations.gemini]
+provider     = "google-cloud"
+title        = "Prompto · Google Generative Language (Gemini/Imagen/Veo)"
+secret_name  = "GEMINI_API_KEY"
+destinations = ["onepassword", "supabase"]
+
+# ── fal.ai (BiRefNet background removal, FLUX) ─────────────────────────────
+[rotations.fal]
+provider     = "fal"
+title        = "Prompto · fal.ai (BiRefNet + FLUX)"
+secret_name  = "FAL_KEY"
+destinations = ["onepassword", "supabase"]
+
+# ── ElevenLabs (voiceover / SFX / TTS) ─────────────────────────────────────
+[rotations.elevenlabs]
+provider     = "elevenlabs"
+title        = "Prompto · ElevenLabs"
+secret_name  = "ELEVENLABS_API_KEY"
+destinations = ["onepassword", "supabase"]
+
+# ── Stripe live secret (payments) ──────────────────────────────────────────
+[rotations.stripe]
+provider     = "stripe"
+title        = "Prompto · Stripe live secret"
+secret_name  = "STRIPE_SECRET_KEY"
+destinations = ["onepassword", "supabase"]
+
+# ── Netlify Personal Access Token ──────────────────────────────────────────
+[rotations.netlify-pat]
+provider     = "netlify"
+title        = "Prompto · Netlify PAT"
+secret_name  = "NETLIFY_PAT"
+destinations = ["onepassword", "supabase"]
+
+# ── Supabase Management PAT ────────────────────────────────────────────────
+[rotations.supabase-pat]
+provider     = "supabase"
+title        = "Prompto · Supabase Management PAT"
+secret_name  = "SETUP_SUPABASE_PAT"
+destinations = ["onepassword", "supabase"]
+
+# ── PostHog project API key ────────────────────────────────────────────────
+[rotations.posthog]
+provider     = "posthog"
+title        = "Prompto · PostHog"
+secret_name  = "POSTHOG_API_KEY"
+destinations = ["onepassword", "supabase"]
+
+# ── HuggingFace ────────────────────────────────────────────────────────────
+[rotations.huggingface]
+provider     = "huggingface"
+title        = "Prompto · HuggingFace"
+secret_name  = "HF_API_KEY"
+destinations = ["onepassword", "supabase"]
+
+# ── AbuseIPDB ──────────────────────────────────────────────────────────────
+[rotations.abuseipdb]
+provider     = "abuseipdb"
+title        = "Prompto · AbuseIPDB"
+secret_name  = "ABUSEIPDB_API_KEY"
+destinations = ["onepassword", "supabase"]
+
+# ════════════════════════════════════════════════════════════════════════════
+# DESTINATIONS  (per-destination shared config; secret_name comes from each rotation)
+# ════════════════════════════════════════════════════════════════════════════
+
+[destinations.github]
+repo = "Prompto-Studio/Prompto-Bot-Img"
+
+[destinations.supabase]
+project_ref = "lubvpbxxwyylzsnriorr"
+
+[destinations.onepassword]
+vault = "Private"
