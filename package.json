@@ -1,6 +1,6 @@
 {
   "name": "keyrotate",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Single-command API-key rotator. Updates 1Password, GitHub, Supabase, Netlify, Fly.io, and .env in one shot — then verifies against the provider.",
   "module": "src/cli.ts",
   "type": "module",
