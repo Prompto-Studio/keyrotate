@@ -1,0 +1,22 @@
+{
+  "name": "keyrotate",
+  "version": "0.1.0",
+  "description": "Single-command API-key rotator. Updates 1Password, GitHub, Supabase, Netlify, Fly.io, and .env in one shot — then verifies against the provider.",
+  "module": "src/cli.ts",
+  "type": "module",
+  "bin": { "keyrotate": "./dist/keyrotate", "kr": "./dist/keyrotate" },
+  "scripts": {
+    "dev": "bun run src/cli.ts",
+    "build": "bun build src/cli.ts --compile --target=bun-darwin-arm64 --outfile dist/keyrotate",
+    "build:linux": "bun build src/cli.ts --compile --target=bun-linux-x64 --outfile dist/keyrotate-linux",
+    "test": "bun test",
+    "lint": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "author": "BotFlow Lab",
+  "repository": "github:botflowlab/keyrotate",
+  "keywords": ["api-key","secrets","rotate","1password","github-actions","supabase","fly","netlify","devops"],
+  "engines": { "bun": ">=1.2.0" },
+  "dependencies": { "@iarna/toml": "^2.2.5" },
+  "devDependencies": { "@types/bun": "^1.2.0", "typescript": "^5.5.0" }
+}
