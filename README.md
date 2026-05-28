@@ -81,14 +81,14 @@ One command. ~30 seconds. Audit-logged. Verified.
 ### Homebrew *(once the tap is published — currently in setup)*
 
 ```bash
-brew tap botflowlab/tap
+brew tap Prompto-Studio/homebrew-tap
 brew install keyrotate
 ```
 
 ### Curl one-liner *(no sudo, no compile)*
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/botflowlab/keyrotate/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Prompto-Studio/keyrotate/main/scripts/install.sh | bash
 ```
 
 Drops the binary at `~/bin/keyrotate` (and the `kr` short alias). Honors `KEYROTATE_INSTALL_DIR` and `KEYROTATE_REPO` if you want to override.
@@ -96,7 +96,7 @@ Drops the binary at `~/bin/keyrotate` (and the `kr` short alias). Honors `KEYROT
 ### From source
 
 ```bash
-git clone https://github.com/botflowlab/keyrotate.git
+git clone https://github.com/Prompto-Studio/keyrotate.git
 cd keyrotate && bun install && bun run build
 ln -sf "$(pwd)/dist/keyrotate" ~/bin/keyrotate
 ln -sf "$(pwd)/dist/keyrotate" ~/bin/kr
@@ -292,7 +292,7 @@ See [`examples/keyrotate.toml`](examples/keyrotate.toml) for the full Prompto co
 Issues and PRs welcome. The codebase is small and intentionally dependency-light (one runtime dep: `@iarna/toml`).
 
 ```bash
-git clone https://github.com/botflowlab/keyrotate.git
+git clone https://github.com/Prompto-Studio/keyrotate.git
 cd keyrotate
 bun install
 bun run dev rotate <name>     # run from source against your project
@@ -308,4 +308,4 @@ bun run lint                  # tsc --noEmit
 
 ---
 
-<sub>Built by [@SteveKinzey](https://github.com/SteveKinzey) for solo founders who got tired of rotation footguns. If `keyrotate` saved you from a production outage, [star the repo](https://github.com/botflowlab/keyrotate) — it helps other devs find it.</sub>
+<sub>Built by [@SteveKinzey](https://github.com/SteveKinzey) for solo founders who got tired of rotation footguns. If `keyrotate` saved you from a production outage, [star the repo](https://github.com/Prompto-Studio/keyrotate) — it helps other devs find it.</sub>

@@ -2,10 +2,10 @@
 # keyrotate installer — fetches the latest release binary for your platform
 # and drops it in ~/bin (or /usr/local/bin if writable). No sudo, no compile.
 #
-#   curl -fsSL https://raw.githubusercontent.com/botflowlab/keyrotate/main/scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/Prompto-Studio/keyrotate/main/scripts/install.sh | bash
 set -euo pipefail
 
-REPO="${KEYROTATE_REPO:-botflowlab/keyrotate}"
+REPO="${KEYROTATE_REPO:-Prompto-Studio/keyrotate}"
 INSTALL_DIR="${KEYROTATE_INSTALL_DIR:-$HOME/bin}"
 
 os=$(uname -s)

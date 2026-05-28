@@ -14,7 +14,7 @@
   },
   "license": "MIT",
   "author": "BotFlow Lab",
-  "repository": "github:botflowlab/keyrotate",
+  "repository": "github:Prompto-Studio/keyrotate",
   "keywords": ["api-key","secrets","rotate","1password","github-actions","supabase","fly","netlify","devops"],
   "engines": { "bun": ">=1.2.0" },
   "dependencies": { "@iarna/toml": "^2.2.5" },
