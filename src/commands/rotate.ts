@@ -2,8 +2,8 @@ import { findConfigPath, loadConfig } from "../config.ts";
 import { getProvider } from "../providers/index.ts";
 import { getDestination } from "../destinations/index.ts";
 import { appendAudit } from "../audit.ts";
-import { log, prompt, promptSecret, confirm, c, mask, nowIso, run } from "../util.ts";
-import type { AuditEntry } from "../types.ts";
+import { log, promptSecret, confirm, c, mask, nowIso, run } from "../util.ts";
+import type { AuditEntry, KeyrotateConfig, RotationConfig } from "../types.ts";
 
 export async function cmdRotate(args: string[]): Promise<number> {
   const path = findConfigPath();
@@ -20,10 +20,11 @@ export async function cmdRotate(args: string[]): Promise<number> {
   log.heading(`Rotate: ${name}`);
   log.info(`Provider:     ${provider.label}`);
   log.info(`Destinations: ${r.destinations.join(", ")}`);
+  if (r.secret_name) log.info(`Secret name:  ${r.secret_name}`);
   if (provider.rotateUrl) log.info(`Create new at: ${c.cyan(provider.rotateUrl)}`);
   log.blank();
 
-  // Pre-flight: each destination needs to be reachable + configured.
+  // Pre-flight every destination.
   for (const dId of r.destinations) {
     const d = getDestination(dId);
     if (!d) { log.err(`Unknown destination "${dId}"`); return 1; }
@@ -34,7 +35,6 @@ export async function cmdRotate(args: string[]): Promise<number> {
   }
   log.blank();
 
-  // Get the new value.
   const newValue = (await promptSecret(`Paste the new ${provider.label} key (hidden):`)).trim();
   if (!newValue) { log.err("No value provided."); return 1; }
   if (provider.looksLikeKey && !provider.looksLikeKey(newValue)) {
@@ -43,7 +43,7 @@ export async function cmdRotate(args: string[]): Promise<number> {
   log.info(`Value: ${mask(newValue)}`);
   log.blank();
 
-  // Verify with provider before writing anywhere.
+  // Verify with provider BEFORE writing anywhere.
   log.step(`Verifying against ${provider.label}…`);
   const verify = await provider.verify(newValue);
   if (!verify.ok) {
@@ -60,15 +60,15 @@ export async function cmdRotate(args: string[]): Promise<number> {
   for (const dId of r.destinations) {
     const d = getDestination(dId)!;
     const destCfg = mergeDestConfig(cfg, dId, r);
-    const secretName = String(destCfg.secret_name ?? destCfg.env_name ?? name);
-    log.step(`Writing to ${d.label}…`);
+    const secretName = String(destCfg.secret_name ?? destCfg.env_name ?? r.secret_name ?? r.name);
+    log.step(`Writing to ${d.label} (${secretName})…`);
     const w = await d.set(secretName, newValue, destCfg);
     if (w.ok) { log.ok(w.detail); succeeded.push(dId); }
     else { log.err(w.detail); failed.push({ id: dId, error: w.detail }); }
   }
   log.blank();
 
-  // Optionally run a post-rotation workflow.
+  // Post-rotate workflow.
   if (r.postRotateWorkflow) {
     log.step(`Triggering post-rotate workflow ${r.postRotateWorkflow}…`);
     const wf = r.postRotateWorkflow.replace(/^\.github\/workflows\//, "");
@@ -77,9 +77,8 @@ export async function cmdRotate(args: string[]): Promise<number> {
     else log.warn(`Could not auto-trigger: ${gh.stderr.trim()}`);
   }
 
-  // Audit log.
   const outcome: AuditEntry["outcome"] = failed.length === 0 ? "success" : succeeded.length > 0 ? "partial" : "failure";
-  const entry: AuditEntry = {
+  appendAudit({
     timestamp: nowIso(),
     rotation: name,
     provider: r.provider,
@@ -89,8 +88,7 @@ export async function cmdRotate(args: string[]): Promise<number> {
     verify,
     operator: process.env.USER ?? "unknown",
     outcome,
-  };
-  appendAudit(entry);
+  });
 
   if (outcome === "success") {
     log.ok(c.green(`Rotation complete (${succeeded.length}/${r.destinations.length} destinations).`));
@@ -104,17 +102,40 @@ export async function cmdRotate(args: string[]): Promise<number> {
   }
 }
 
-function mergeDestConfig(cfg: ReturnType<typeof loadConfig>, dId: string, rotation: { title?: string; name: string }): Record<string, unknown> {
+/**
+ * Merge config for a destination, applying (in increasing precedence):
+ *   1. global [destinations.<id>] table
+ *   2. per-rotation [rotations.<name>.overrides.<id>] table
+ *   3. rotation-level secret_name → used as default for secret_name + env_name
+ */
+function mergeDestConfig(cfg: KeyrotateConfig, dId: string, r: RotationConfig): Record<string, unknown> {
   const base = (cfg.destinations[dId] ?? {}) as Record<string, unknown>;
-  // 1Password needs title (per-rotation) and vault (default).
+  const override = r.overrides?.[dId] ?? {};
+  const defaultName = r.secret_name ?? r.name;
+
+  const merged: Record<string, unknown> = {
+    ...base,
+    ...override,
+    // Apply rotation-level secret_name as the default for any field that names the secret.
+    secret_name: override.secret_name ?? r.secret_name ?? base.secret_name ?? r.name,
+    env_name: override.env_name ?? r.secret_name ?? base.env_name ?? r.name,
+  };
+
+  // 1Password specifics — needs vault + title.
   if (dId === "onepassword") {
     return {
-      vault: base.vault ?? cfg.defaults?.op_vault ?? "Private",
-      title: rotation.title ?? rotation.name,
-      tags: base.tags ?? (cfg.defaults?.op_tags ?? ["keyrotate"]).join(","),
-      category: base.category ?? cfg.defaults?.op_category ?? "API Credential",
-      field: base.field ?? "credential",
+      vault: override.vault ?? base.vault ?? cfg.defaults?.op_vault ?? "Private",
+      title: override.title ?? r.title ?? r.name,
+      tags: override.tags ?? base.tags ?? (cfg.defaults?.op_tags ?? ["keyrotate"]).join(","),
+      category: override.category ?? base.category ?? cfg.defaults?.op_category ?? "API Credential",
+      field: override.field ?? base.field ?? "credential",
     };
   }
-  return base;
+
+  // For Fly.io, allow per-rotation app override.
+  if (dId === "flyio") {
+    return { ...merged, app: override.app ?? base.app };
+  }
+
+  return merged;
 }

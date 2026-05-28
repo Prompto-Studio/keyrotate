@@ -19,6 +19,11 @@ export interface RotationConfig {
   provider: string;
   title?: string;
   destinations: string[];
+  /** Default secret/env-var name used by every destination that needs one. */
+  secret_name?: string;
+  /** Per-destination config overrides. e.g. overrides.envfile.env_name = "VITE_OPENAI_API_KEY" */
+  overrides?: Record<string, Record<string, unknown>>;
+  /** Optional GH workflow to trigger after success (relative path under .github/workflows/). */
   postRotateWorkflow?: string;
   notes?: string;
 }

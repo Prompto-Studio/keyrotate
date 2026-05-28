@@ -1,0 +1,117 @@
+name: Release
+
+# Builds standalone binaries for macOS (arm64 + x64) and Linux (x64) on tag push,
+# tarballs them, attaches to the GitHub Release, prints the SHA256 in the summary.
+#
+# To cut a release:
+#   bun version patch && git push && git push --tags
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14         # Apple Silicon
+            target: bun-darwin-arm64
+            artifact: keyrotate-darwin-arm64
+          - os: macos-13         # Intel
+            target: bun-darwin-x64
+            artifact: keyrotate-darwin-x64
+          - os: ubuntu-latest    # Linux x64
+            target: bun-linux-x64
+            artifact: keyrotate-linux-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with: { bun-version: latest }
+      - run: bun install --frozen-lockfile
+      - run: bun build src/cli.ts --compile --target=${{ matrix.target }} --outfile dist/keyrotate
+      - name: Tarball + SHA
+        run: |
+          cd dist
+          tar -czf "../${{ matrix.artifact }}.tar.gz" keyrotate
+          cd ..
+          sha=$(shasum -a 256 "${{ matrix.artifact }}.tar.gz" | awk '{print $1}')
+          echo "sha256=$sha" >> $GITHUB_OUTPUT
+          echo "### ${{ matrix.artifact }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`sha256: $sha\`" >> $GITHUB_STEP_SUMMARY
+        id: sha
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.artifact }}.tar.gz
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+
+  update-formula:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compute SHA256s
+        id: sha
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          echo "version=$v" >> $GITHUB_OUTPUT
+          for arch in darwin-arm64 darwin-x64 linux-x64; do
+            url="https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/keyrotate-${arch}.tar.gz"
+            # Poll up to 60s for the release asset to be queryable
+            for i in 1 2 3 4 5 6; do
+              if curl -fsSL -o "/tmp/kr-${arch}.tar.gz" "$url"; then break; fi
+              sleep 10
+            done
+            sha=$(shasum -a 256 "/tmp/kr-${arch}.tar.gz" | awk '{print $1}')
+            echo "sha_${arch//-/_}=$sha" >> $GITHUB_OUTPUT
+          done
+      - name: Render Formula
+        run: |
+          mkdir -p Formula
+          cat > Formula/keyrotate.rb <<RUBY
+          class Keyrotate < Formula
+            desc "One-command API-key rotator — 1Password, GitHub, Supabase, Netlify, Fly.io, .env"
+            homepage "https://github.com/${{ github.repository }}"
+            version "${{ steps.sha.outputs.version }}"
+            license "MIT"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/keyrotate-darwin-arm64.tar.gz"
+                sha256 "${{ steps.sha.outputs.sha_darwin_arm64 }}"
+              end
+              on_intel do
+                url "https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/keyrotate-darwin-x64.tar.gz"
+                sha256 "${{ steps.sha.outputs.sha_darwin_x64 }}"
+              end
+            end
+
+            on_linux do
+              url "https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/keyrotate-linux-x64.tar.gz"
+              sha256 "${{ steps.sha.outputs.sha_linux_x64 }}"
+            end
+
+            def install
+              bin.install "keyrotate"
+              bin.install_symlink bin/"keyrotate" => "kr"
+            end
+
+            test do
+              assert_match version.to_s, shell_output("#{bin}/keyrotate version")
+            end
+          end
+          RUBY
+      - name: Upload formula to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Formula/keyrotate.rb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: keyrotate-formula
+          path: Formula/keyrotate.rb

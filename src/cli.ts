@@ -6,7 +6,7 @@ import { cmdVerify } from "./commands/verify.ts";
 import { cmdAudit } from "./commands/audit.ts";
 import { cmdInit } from "./commands/init.ts";
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 
 const HELP = `
 ${c.bold("keyrotate")} ${c.dim(`v${VERSION}`)}  ${c.dim("— one-command API-key rotation")}
