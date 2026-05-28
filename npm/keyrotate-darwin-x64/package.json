@@ -1,12 +1,26 @@
 {
-  "name": "keyrotate-darwin-x64",
+  "name": "@prompto-studio/keyrotate-darwin-x64",
   "version": "0.4.0",
-  "description": "darwin-x64 binary for keyrotate. Do not install directly — `npm install keyrotate` selects the right one automatically.",
-  "os": ["darwin"],
-  "cpu": ["x64"],
-  "files": ["bin"],
-  "engines": { "node": ">=18" },
+  "description": "darwin-x64 binary for keyrotate. Do not install directly \u2014 `npm install keyrotate` selects the right one automatically.",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "files": [
+    "bin"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/Prompto-Studio/keyrotate.git" },
-  "homepage": "https://github.com/Prompto-Studio/keyrotate#readme"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Prompto-Studio/keyrotate.git"
+  },
+  "homepage": "https://github.com/Prompto-Studio/keyrotate#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -9,10 +9,10 @@ const platform = process.platform;
 const arch = process.arch;
 
 const map = {
-  "darwin-arm64": { pkg: "keyrotate-darwin-arm64", bin: "keyrotate" },
-  "darwin-x64":   { pkg: "keyrotate-darwin-x64",   bin: "keyrotate" },
-  "linux-x64":    { pkg: "keyrotate-linux-x64",    bin: "keyrotate" },
-  "win32-x64":    { pkg: "keyrotate-win32-x64",    bin: "keyrotate.exe" },
+  "darwin-arm64": { pkg: "@prompto-studio/keyrotate-darwin-arm64", bin: "keyrotate" },
+  "darwin-x64":   { pkg: "@prompto-studio/keyrotate-darwin-x64",   bin: "keyrotate" },
+  "linux-x64":    { pkg: "@prompto-studio/keyrotate-linux-x64",    bin: "keyrotate" },
+  "win32-x64":    { pkg: "@prompto-studio/keyrotate-win32-x64",    bin: "keyrotate.exe" },
 };
 const entry = map[`${platform}-${arch}`];
 if (!entry) {
