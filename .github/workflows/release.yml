@@ -45,8 +45,13 @@ jobs:
       - name: Compute SHA256s
         id: sha
         run: |
-          v="${GITHUB_REF_NAME#v}"
-          echo "version=$v" >> $GITHUB_OUTPUT
+          v_display="${GITHUB_REF_NAME#v}"
+          # Map cosmetic 00.00.NN → semver 0.NN.0 so Homebrew's version comparison
+          # can order upgrades. CLI/README still show v_display.
+          last_seg="${v_display##*.}"; last_n=$((10#$last_seg))
+          v_semver="0.${last_n}.0"
+          echo "version=$v_semver"   >> $GITHUB_OUTPUT
+          echo "v_display=$v_display" >> $GITHUB_OUTPUT
           for arch in darwin-arm64 darwin-x64 linux-x64; do
             sha=$(shasum -a 256 "keyrotate-${arch}.tar.gz" | awk '{print $1}')
             echo "sha_$(echo $arch | tr - _)=$sha" >> $GITHUB_OUTPUT
@@ -60,7 +65,7 @@ jobs:
           class Keyrotate < Formula
             desc "One-command API-key rotator — 1Password, GitHub, Supabase, Netlify, Fly.io, .env"
             homepage "https://github.com/${{ github.repository }}"
-            version "${{ steps.sha.outputs.version }}"
+            version "${{ steps.sha.outputs.version }}"     # ${{ steps.sha.outputs.v_display }} (cosmetic)
             license "MIT"
 
             on_macos do
