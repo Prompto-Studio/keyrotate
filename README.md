@@ -308,4 +308,12 @@ bun run lint                  # tsc --noEmit
 
 ---
 
-<sub>Built by [@SteveKinzey](https://github.com/SteveKinzey) for solo founders who got tired of rotation footguns. If `keyrotate` saved you from a production outage, [star the repo](https://github.com/Prompto-Studio/keyrotate) — it helps other devs find it.</sub>
+## Support
+
+If `keyrotate` saved you from a production outage, the most useful thing you can do is **[⭐ star the repo](https://github.com/Prompto-Studio/keyrotate)** — that's what helps other devs find it.
+
+If you want to do more, **[♥ Sponsor on GitHub](https://github.com/sponsors/SteveKinzey)** is the preferred way (it covers recurring + one-time; GitHub takes no fee). Ko-fi support is coming soon.
+
+---
+
+<sub>Built by [@SteveKinzey](https://github.com/SteveKinzey) for solo founders who got tired of rotation footguns.</sub>

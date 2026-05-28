@@ -1,0 +1,11 @@
+# GitHub Sponsors button + alternative funding links for the keyrotate repo.
+# Once an entry is set, GitHub adds a ♥ Sponsor button to the repo header.
+# The github: field works as soon as the user's GitHub Sponsors application
+# is approved (typically 5–15 days after applying at github.com/sponsors).
+
+github: [SteveKinzey]                # Approval pending; button appears automatically once live
+
+# Uncomment + fill in once you've signed up:
+# ko_fi: your-kofi-handle             # https://ko-fi.com — one-time donations, instant signup
+# buy_me_a_coffee: your-handle        # alternative to ko-fi
+# liberapay: your-handle              # recurring donations, no platform fees
