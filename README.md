@@ -1,6 +1,6 @@
 <div align="center">
 
-# keyrotate
+<img src="docs/wordmark.svg" alt="keyrotate" width="420"/>
 
 ### Rotate any API key in one command. Update 1Password, GitHub, Supabase, Netlify, Fly.io, and your `.env` in one shot — verified end-to-end.
 

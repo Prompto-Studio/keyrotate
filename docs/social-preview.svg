@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" fill="none" role="img" aria-label="keyrotate">
+  <title>keyrotate</title>
+  <rect width="1280" height="640" fill="#F8FAFC"/>
+  <defs>
+    <pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#0F172A" opacity="0.08"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="640" fill="url(#dots)"/>
+
+  <!-- Icon, centered-ish, scaled up — single integrated key+rotation form -->
+  <g transform="translate(150, 130) scale(1.4)">
+    <g stroke="#0F172A" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="128" cy="76" r="36"/>
+      <path d="M 128 112 L 128 140 A 38 38 0 1 1 90 178"/>
+      <path d="M 128 132 L 152 132"/>
+      <path d="M 128 148 L 144 148"/>
+    </g>
+    <path d="M 90 158 L 74 184 L 106 184 Z" fill="#0F172A"/>
+  </g>
+
+  <text x="540" y="316"
+        font-family="ui-monospace, 'JetBrains Mono', 'IBM Plex Mono', Menlo, Consolas, monospace"
+        font-size="128" font-weight="700" fill="#0F172A" letter-spacing="-4">keyrotate</text>
+  <text x="544" y="372"
+        font-family="ui-sans-serif, system-ui, -apple-system, 'Inter', 'Helvetica Neue', sans-serif"
+        font-size="30" font-weight="500" fill="#475569" letter-spacing="-0.5">Rotate any API key in one command.</text>
+  <text x="544" y="412"
+        font-family="ui-sans-serif, system-ui, -apple-system, 'Inter', 'Helvetica Neue', sans-serif"
+        font-size="30" font-weight="500" fill="#475569" letter-spacing="-0.5">1Password · GitHub · Supabase · Netlify · Fly.io · .env</text>
+</svg>
