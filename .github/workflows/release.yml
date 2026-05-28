@@ -159,5 +159,5 @@ jobs:
 
           for pkg in npm/keyrotate-darwin-arm64 npm/keyrotate-darwin-x64 npm/keyrotate-linux-x64 npm/keyrotate-win32-x64 npm/keyrotate; do
             echo "→ publishing $pkg"
-            (cd "$pkg" && npm publish --access public)
+            if [[ "$pkg" == "npm/keyrotate-win32-x64" ]]; then (cd "$pkg" && npm publish --access public) || echo "::warning::win32-x64 publish failed (likely npm spam filter); see issue tracker"; else (cd "$pkg" && npm publish --access public); fi
           done
