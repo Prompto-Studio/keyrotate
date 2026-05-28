@@ -12,15 +12,19 @@ export async function cmdVerify(args: string[]): Promise<number> {
     return 1;
   }
   const r = cfg.rotations[name];
-  const provider = getProvider(r.provider);
+  const provider = getProvider(r.provider, cfg);
   if (!provider) { log.err(`Unknown provider "${r.provider}"`); return 1; }
   log.heading(`Verify: ${name}`);
   log.info(`Provider: ${provider.label}`);
   const key = await prompt(`Paste the current ${provider.label} key:`);
   if (!key) { log.err("No value provided."); return 1; }
   log.info(`Checking ${mask(key)}…`);
-  const v = await provider.verify(key);
-  if (v.ok) log.ok(c.green(v.detail));
-  else log.err(c.red(v.detail));
-  return v.ok ? 0 : 1;
+  const providerCfg: Record<string, string> = {};
+  for (const [k, v] of Object.entries((cfg.providers?.[r.provider] ?? {}) as Record<string, unknown>)) {
+    if (k !== "custom" && (typeof v === "string" || typeof v === "number")) providerCfg[k] = String(v);
+  }
+  const vRes = await provider.verify(key, providerCfg);
+  if (vRes.ok) log.ok(c.green(vRes.detail));
+  else log.err(c.red(vRes.detail));
+  return vRes.ok ? 0 : 1;
 }

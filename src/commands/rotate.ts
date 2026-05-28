@@ -1,8 +1,10 @@
+import { readFileSync, existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { findConfigPath, loadConfig } from "../config.ts";
 import { getProvider } from "../providers/index.ts";
 import { getDestination } from "../destinations/index.ts";
 import { appendAudit } from "../audit.ts";
-import { log, promptSecret, confirm, c, mask, nowIso, run } from "../util.ts";
+import { log, prompt, promptSecret, confirm, c, mask, nowIso, run } from "../util.ts";
 import type { AuditEntry, KeyrotateConfig, RotationConfig } from "../types.ts";
 
 export async function cmdRotate(args: string[]): Promise<number> {
@@ -14,7 +16,7 @@ export async function cmdRotate(args: string[]): Promise<number> {
   const r = cfg.rotations[name];
   if (!r) { log.err(`Unknown rotation "${name}" — try \`keyrotate list\``); return 1; }
 
-  const provider = getProvider(r.provider);
+  const provider = getProvider(r.provider, cfg);
   if (!provider) { log.err(`Unknown provider "${r.provider}"`); return 1; }
 
   log.heading(`Rotate: ${name}`);
@@ -35,17 +37,31 @@ export async function cmdRotate(args: string[]): Promise<number> {
   }
   log.blank();
 
-  const newValue = (await promptSecret(`Paste the new ${provider.label} key (hidden):`)).trim();
-  if (!newValue) { log.err("No value provided."); return 1; }
-  if (provider.looksLikeKey && !provider.looksLikeKey(newValue)) {
-    if (!(await confirm(`Value doesn't match expected ${provider.label} key format. Continue anyway?`, false))) return 1;
+  // Read the new value — string paste, or file-path → file contents
+  let newValue: string;
+  if (provider.inputMode === "file") {
+    const p = (await prompt(`Path to the new ${provider.label} file:`)).trim();
+    if (!p) { log.err("No path provided."); return 1; }
+    const abs = resolve(p.replace(/^~/, process.env.HOME ?? ""));
+    if (!existsSync(abs)) { log.err(`File not found: ${abs}`); return 1; }
+    try { newValue = readFileSync(abs, "utf8"); }
+    catch (e) { log.err(`Couldn't read file: ${e instanceof Error ? e.message : String(e)}`); return 1; }
+    log.info(`Loaded ${newValue.length} bytes from ${abs}`);
+  } else {
+    newValue = (await promptSecret(`Paste the new ${provider.label} key (hidden):`)).trim();
+    if (!newValue) { log.err("No value provided."); return 1; }
+    if (provider.looksLikeKey && !provider.looksLikeKey(newValue)) {
+      if (!(await confirm(`Value doesn't match expected ${provider.label} key format. Continue anyway?`, false))) return 1;
+    }
+    log.info(`Value: ${mask(newValue)}`);
   }
-  log.info(`Value: ${mask(newValue)}`);
   log.blank();
 
   // Verify with provider BEFORE writing anywhere.
+  // Pass [providers.<id>] static config (e.g. tenant_id for microsoft365).
+  const providerCfg = providerStaticConfig(cfg, r.provider);
   log.step(`Verifying against ${provider.label}…`);
-  const verify = await provider.verify(newValue);
+  const verify = await provider.verify(newValue, providerCfg);
   if (!verify.ok) {
     log.err(`Verification failed: ${verify.detail}`);
     log.warn("Aborting — nothing written. Confirm the key in the provider dashboard and try again.");
@@ -68,7 +84,6 @@ export async function cmdRotate(args: string[]): Promise<number> {
   }
   log.blank();
 
-  // Post-rotate workflow.
   if (r.postRotateWorkflow) {
     log.step(`Triggering post-rotate workflow ${r.postRotateWorkflow}…`);
     const wf = r.postRotateWorkflow.replace(/^\.github\/workflows\//, "");
@@ -102,26 +117,25 @@ export async function cmdRotate(args: string[]): Promise<number> {
   }
 }
 
-/**
- * Merge config for a destination, applying (in increasing precedence):
- *   1. global [destinations.<id>] table
- *   2. per-rotation [rotations.<name>.overrides.<id>] table
- *   3. rotation-level secret_name → used as default for secret_name + env_name
- */
+function providerStaticConfig(cfg: KeyrotateConfig, providerId: string): Record<string, string> {
+  const raw = (cfg.providers?.[providerId] ?? {}) as Record<string, unknown>;
+  // Stringify values — the verify() signature takes Record<string,string>.
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (k === "custom") continue;
+    if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") out[k] = String(v);
+  }
+  return out;
+}
+
 function mergeDestConfig(cfg: KeyrotateConfig, dId: string, r: RotationConfig): Record<string, unknown> {
   const base = (cfg.destinations[dId] ?? {}) as Record<string, unknown>;
   const override = r.overrides?.[dId] ?? {};
-  const defaultName = r.secret_name ?? r.name;
-
   const merged: Record<string, unknown> = {
-    ...base,
-    ...override,
-    // Apply rotation-level secret_name as the default for any field that names the secret.
+    ...base, ...override,
     secret_name: override.secret_name ?? r.secret_name ?? base.secret_name ?? r.name,
     env_name: override.env_name ?? r.secret_name ?? base.env_name ?? r.name,
   };
-
-  // 1Password specifics — needs vault + title.
   if (dId === "onepassword") {
     return {
       vault: override.vault ?? base.vault ?? cfg.defaults?.op_vault ?? "Private",
@@ -131,11 +145,6 @@ function mergeDestConfig(cfg: KeyrotateConfig, dId: string, r: RotationConfig): 
       field: override.field ?? base.field ?? "credential",
     };
   }
-
-  // For Fly.io, allow per-rotation app override.
-  if (dId === "flyio") {
-    return { ...merged, app: override.app ?? base.app };
-  }
-
+  if (dId === "flyio") return { ...merged, app: override.app ?? base.app };
   return merged;
 }
