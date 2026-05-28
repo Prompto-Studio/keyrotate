@@ -1,0 +1,31 @@
+{
+  "name": "keyrotate",
+  "version": "0.4.0",
+  "description": "One-command API-key rotator — updates 1Password, GitHub, Supabase, Netlify, Fly.io, and .env in one shot, then verifies against the provider.",
+  "displayVersion": "00.00.04",
+  "type": "commonjs",
+  "bin": {
+    "keyrotate": "./bin/keyrotate.js",
+    "kr": "./bin/keyrotate.js"
+  },
+  "files": ["bin"],
+  "scripts": {
+    "postinstall": "node -e \"try{require('fs').chmodSync(require.resolve(require('./package.json').name.replace('keyrotate', 'keyrotate-' + (process.platform === 'darwin' ? (process.arch === 'arm64' ? 'darwin-arm64' : 'darwin-x64') : 'linux-x64')) + '/bin/keyrotate'), 0o755)}catch(e){}\""
+  },
+  "optionalDependencies": {
+    "keyrotate-darwin-arm64": "0.4.0",
+    "keyrotate-darwin-x64": "0.4.0",
+    "keyrotate-linux-x64": "0.4.0"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT",
+  "author": "BotFlow Lab",
+  "repository": { "type": "git", "url": "git+https://github.com/Prompto-Studio/keyrotate.git" },
+  "homepage": "https://github.com/Prompto-Studio/keyrotate#readme",
+  "bugs": "https://github.com/Prompto-Studio/keyrotate/issues",
+  "keywords": [
+    "api-key", "secrets", "rotate", "rotation", "1password", "github-actions",
+    "supabase", "netlify", "fly", "fly.io", "devops", "security", "cli",
+    "secret-management", "openai", "anthropic", "stripe", "resend"
+  ]
+}

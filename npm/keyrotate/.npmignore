@@ -1,0 +1,5 @@
+*
+!bin/
+!bin/keyrotate.js
+!package.json
+!README.md

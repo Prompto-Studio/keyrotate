@@ -1,0 +1,12 @@
+{
+  "name": "keyrotate-linux-x64",
+  "version": "0.4.0",
+  "description": "linux-x64 binary for keyrotate. Do not install directly — `npm install keyrotate` selects the right one automatically.",
+  "os": ["linux"],
+  "cpu": ["x64"],
+  "files": ["bin"],
+  "engines": { "node": ">=18" },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/Prompto-Studio/keyrotate.git" },
+  "homepage": "https://github.com/Prompto-Studio/keyrotate#readme"
+}

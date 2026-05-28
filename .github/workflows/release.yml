@@ -106,3 +106,35 @@ jobs:
             Formula/keyrotate.rb
           generate_release_notes: true
           fail_on_unmatched_files: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Stage and publish npm packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          V_SEMVER: ${{ steps.sha.outputs.version }}
+          V_DISPLAY: ${{ steps.sha.outputs.v_display }}
+        run: |
+          set -euo pipefail
+          mkdir -p _bins/darwin-arm64 _bins/darwin-x64 _bins/linux-x64
+          for arch in darwin-arm64 darwin-x64 linux-x64; do
+            tar -xzf "keyrotate-${arch}.tar.gz" -C "_bins/${arch}"
+          done
+
+          for pkg in npm/keyrotate npm/keyrotate-darwin-arm64 npm/keyrotate-darwin-x64 npm/keyrotate-linux-x64; do
+            node -e "const f='${pkg}/package.json';const p=require('./'+f);p.version=process.env.V_SEMVER;if(p.optionalDependencies){for(const k of Object.keys(p.optionalDependencies))p.optionalDependencies[k]=process.env.V_SEMVER;}require('fs').writeFileSync(f,JSON.stringify(p,null,2)+'\n');"
+          done
+
+          for arch in darwin-arm64 darwin-x64 linux-x64; do
+            mkdir -p "npm/keyrotate-${arch}/bin"
+            cp "_bins/${arch}/keyrotate" "npm/keyrotate-${arch}/bin/keyrotate"
+            chmod +x "npm/keyrotate-${arch}/bin/keyrotate"
+          done
+
+          for pkg in npm/keyrotate-darwin-arm64 npm/keyrotate-darwin-x64 npm/keyrotate-linux-x64 npm/keyrotate; do
+            echo "→ publishing $pkg"
+            (cd "$pkg" && npm publish --access public)
+          done
