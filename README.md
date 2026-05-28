@@ -78,6 +78,37 @@ One command. ~30 seconds. Audit-logged. Verified.
 
 ## Install
 
+### Easiest — `npx` (no install)
+
+If you have Node.js 18+ on your Mac, you can run keyrotate without installing anything:
+
+```bash
+npx keyrotate setup       # interactive wizard
+npx keyrotate rotate <name>
+```
+
+Each `npx` invocation downloads the right binary for your Mac (Apple Silicon or Intel) automatically. Good for trying it out.
+
+### Recommended on macOS — `npm install -g`
+
+If you'll use keyrotate more than once, install it globally so `keyrotate` and `kr` are always on your `PATH`:
+
+```bash
+# 1. Make sure Node.js is installed.
+#    Check with: node --version    (need 18 or newer)
+#    Install via Homebrew if missing:
+brew install node
+
+# 2. Install keyrotate
+npm install -g keyrotate
+
+# 3. Verify it works
+keyrotate version
+kr version                # `kr` is the short alias
+```
+
+That's it — `keyrotate` and `kr` now work in any terminal.
+
 ### Homebrew *(once the tap is published — currently in setup)*
 
 ```bash
@@ -85,7 +116,7 @@ brew tap Prompto-Studio/homebrew-tap
 brew install keyrotate
 ```
 
-### Curl one-liner *(no sudo, no compile)*
+### Curl one-liner *(no Node, no Homebrew)*
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Prompto-Studio/keyrotate/main/scripts/install.sh | bash
@@ -103,6 +134,27 @@ ln -sf "$(pwd)/dist/keyrotate" ~/bin/kr
 ```
 
 Requires [Bun](https://bun.sh) 1.2+ to build (not at runtime — the binary is standalone).
+
+### Before your first rotation
+
+You'll also need these CLIs signed in (only the ones for destinations you actually use):
+
+```bash
+brew install --cask 1password-cli   # `op` — 1Password vault
+brew install gh                     # GitHub Actions secrets
+brew install supabase/tap/supabase  # Supabase Edge Function secrets
+brew install netlify-cli            # Netlify env vars
+brew install flyctl                 # Fly.io app secrets
+
+# Sign each one in once:
+op signin
+gh auth login
+supabase login
+netlify login
+flyctl auth login
+```
+
+Then run `keyrotate setup` (interactive wizard) or `keyrotate init` (write a starter `keyrotate.toml`).
 
 ---
 
