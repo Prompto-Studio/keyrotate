@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Trust &amp; Safety — keyrotate</title>
+  <meta name="description" content="keyrotate's 5-document trust stack: Security Posture, Supply Chain Integrity, Vulnerability Disclosure, Data Handling, Incident Response."/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <main>
+    <header><a href="index.html"><img src="wordmark.svg" alt="keyrotate" class="wordmark-small"/></a></header>
+
+    <h1>Trust &amp; Safety</h1>
+    <p class="lastupdate">Stack v1.0 · Last reviewed: <time datetime="2026-05-28">May 28, 2026</time></p>
+    <p>keyrotate is a security tool. The five documents below explain what the CLI does and doesn't do with your secrets, how the binaries you install are built and verified, how to report a vulnerability if you find one, what the website collects, and what happens if something goes wrong. Together they form the project's trust stack.</p>
+
+    <h2>The 5-document trust stack</h2>
+    <div class="card-grid">
+      <a class="doc-card" href="security-posture.html">
+        <span class="num">01</span>
+        <span class="title">Security Posture</span>
+        <p class="desc">What keyrotate does · what it never does · how secrets are handled in memory and on disk.</p>
+        <span class="badge">no telemetry · local-only</span>
+      </a>
+      <a class="doc-card" href="supply-chain.html">
+        <span class="num">02</span>
+        <span class="title">Supply Chain Integrity</span>
+        <p class="desc">How the binaries are built · how to verify SHA256s · how to build from source.</p>
+        <span class="badge">reproducible builds</span>
+      </a>
+      <a class="doc-card" href="vulnerability-disclosure.html">
+        <span class="num">03</span>
+        <span class="title">Vulnerability Disclosure</span>
+        <p class="desc">Coordinated disclosure policy · what's in scope · how fast we acknowledge and fix.</p>
+        <span class="badge">90-day disclosure window</span>
+      </a>
+      <a class="doc-card" href="data-handling-notice.html">
+        <span class="num">04</span>
+        <span class="title">Data Handling Notice</span>
+        <p class="desc">What the website logs · what the CLI sends over the network · what we never collect.</p>
+        <span class="badge">GDPR / CCPA aligned</span>
+      </a>
+      <a class="doc-card" href="incident-response.html">
+        <span class="num">05</span>
+        <span class="title">Incident Response Plan</span>
+        <p class="desc">What counts as an incident · who responds · escalation · post-mortem disclosure.</p>
+        <span class="badge">public running log</span>
+      </a>
+    </div>
+
+    <h2>Related legal documents</h2>
+    <p>These trust documents complement the <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms of Service</a>. The source is MIT-licensed; see the <a href="https://github.com/Prompto-Studio/keyrotate/blob/main/LICENSE">LICENSE</a> in the repository.</p>
+
+    <h2>Contacts</h2>
+    <div class="contact-info">
+      <p><strong>Operator:</strong> BotFlow Lab</p>
+      <ul>
+        <li><strong>Security / vulnerability reports:</strong> <a href="https://github.com/Prompto-Studio/keyrotate/security/advisories">GitHub Security Advisories</a> (preferred) or <a href="mailto:security@botflowlabos.com">security@botflowlabos.com</a></li>
+        <li><strong>Privacy:</strong> <a href="mailto:privacy@botflowlabos.com">privacy@botflowlabos.com</a></li>
+        <li><strong>General:</strong> <a href="https://github.com/Prompto-Studio/keyrotate/discussions">GitHub Discussions</a></li>
+      </ul>
+    </div>
+
+    <footer>
+      <div class="footer-row">
+        <div>MIT licensed · macOS · Linux · Windows</div>
+        <div>© <span id="y"></span> BotFlow Lab</div>
+      </div>
+      <div class="footer-legal">
+        <a href="trust.html">Trust &amp; Safety</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="https://github.com/Prompto-Studio/keyrotate/security/advisories">Report a vulnerability</a>
+      </div>
+    </footer>
+  </main>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

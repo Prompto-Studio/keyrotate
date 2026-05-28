@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Security Posture — keyrotate</title>
+  <meta name="description" content="What keyrotate does with your secrets and what it never does. No telemetry, no phone-home, local-only audit log."/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <main>
+    <header><a href="index.html"><img src="wordmark.svg" alt="keyrotate" class="wordmark-small"/></a></header>
+    <h1>Security Posture</h1>
+<p class="lastupdate">Document 01 of 5 · Last reviewed: <time datetime="2026-05-28">May 28, 2026</time></p>
+<p>This document explains what keyrotate does with your secrets and what it explicitly does <em>not</em> do.</p>
+
+<h2>What keyrotate does</h2>
+<ul>
+  <li><strong>Verifies a candidate key against the upstream provider</strong> before writing it anywhere. If the provider rejects the key, nothing is written and the rotation aborts.</li>
+  <li><strong>Writes the verified key to each configured destination</strong> (1Password, GitHub Actions secrets, Supabase, Netlify, Fly.io, local <code class="inline">.env</code>) via that destination's official CLI or HTTPS API.</li>
+  <li><strong>Appends a JSONL audit entry</strong> to <code class="inline">~/.config/keyrotate/audit.log</code> recording timestamp, provider, destinations attempted / succeeded / failed, verifier result, and operator (your local username). <strong>Never the key value itself.</strong></li>
+  <li><strong>Optionally triggers a post-rotate verification workflow</strong> (a GitHub Actions workflow you specify) so you can confirm the new key reaches production.</li>
+  <li><strong>Offers to open the provider's revocation page</strong> so you can revoke the old key as the final step.</li>
+</ul>
+
+<h2>What keyrotate never does</h2>
+<ul>
+  <li><strong>No telemetry.</strong> The binary makes HTTP calls only to providers and destinations you have explicitly configured in <code class="inline">keyrotate.toml</code>. No analytics, no error reporting, no "anonymous usage stats."</li>
+  <li><strong>No phone-home auto-update.</strong> The binary does not check for new versions or contact any keyrotate-controlled server. Updates happen only when you run <code class="inline">brew upgrade</code> / <code class="inline">npm update</code> / etc.</li>
+  <li><strong>No cloud component.</strong> There is no keyrotate-controlled backend. All state (config, audit log) lives on the machine where you run the CLI.</li>
+  <li><strong>Secrets never written to disk except where you direct.</strong> The CLI holds the new key value in memory only long enough to verify and dispatch it.</li>
+  <li><strong>Secrets never logged.</strong> The audit log records outcomes, never values. Standard output prints <code class="inline">****</code> placeholders for hidden-input prompts.</li>
+</ul>
+
+<h2>Where secrets travel during a rotation</h2>
+<ol>
+  <li>From your terminal's hidden-input prompt into the running keyrotate process (in memory).</li>
+  <li>To the provider's verification endpoint, over HTTPS, via a single authenticated request (e.g. <code class="inline">GET https://api.openai.com/v1/models</code>).</li>
+  <li>To each destination's API or CLI: 1Password (via <code class="inline">op</code> CLI with stdin pipe), GitHub (via <code class="inline">gh secret set</code> with stdin pipe), Supabase, Netlify, Fly.io (via their CLIs), <code class="inline">.env</code> files (written with mode <code class="inline">0600</code>).</li>
+  <li>Out of memory when the process exits.</li>
+</ol>
+<p>Some destination CLIs (Supabase, Fly.io) accept secrets as command-line arguments rather than stdin; that means the value is briefly visible to <code class="inline">ps</code> on the local machine while the destination CLI is running. This is a limitation of the upstream CLI, not keyrotate. Patches to use management APIs directly are welcome.</p>
+
+<h2>1Password integration</h2>
+<p>keyrotate uses the official <code class="inline">op</code> CLI, which authenticates via your system's biometrics (Touch ID on macOS, Windows Hello on Windows). keyrotate never sees your 1Password master password or session token; it shells out to <code class="inline">op</code> and pipes the secret over stdin.</p>
+
+<h2>Local file permissions</h2>
+<ul>
+  <li><code class="inline">~/.config/keyrotate/audit.log</code> — created with mode <code class="inline">0600</code> (user-readable only).</li>
+  <li>Generated <code class="inline">.env</code> files — written with mode <code class="inline">0600</code>.</li>
+  <li><code class="inline">keyrotate.toml</code> — your config; permissions inherited from creator. Recommend <code class="inline">chmod 0644</code> (no secrets are stored here, but it lists secret names).</li>
+</ul>
+
+<h2>Threat model — what keyrotate is and isn't designed to defend against</h2>
+<p><strong>Designed for:</strong> reducing the number of manual steps in a rotation, eliminating the "I forgot to update Supabase" failure mode, and verifying the new key actually works before the old one is revoked.</p>
+<p><strong>Not designed for:</strong> defending against a compromised local machine. If an attacker has root or code execution on the machine running keyrotate, they can read the audit log, read <code class="inline">.env</code> files, and intercept secrets as they pass through memory. keyrotate assumes a trusted local environment.</p>
+    <footer>
+      <div class="footer-row">
+        <div>MIT licensed · macOS · Linux · Windows</div>
+        <div>© <span id="y"></span> BotFlow Lab</div>
+      </div>
+      <div class="footer-legal">
+        <a href="trust.html">Trust &amp; Safety</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="https://github.com/Prompto-Studio/keyrotate/security/advisories">Report a vulnerability</a>
+      </div>
+    </footer>
+  </main>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

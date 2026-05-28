@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Incident Response Plan — keyrotate</title>
+  <meta name="description" content="What we consider an incident, who responds, how we escalate, and how we disclose post-mortems publicly."/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <main>
+    <header><a href="index.html"><img src="wordmark.svg" alt="keyrotate" class="wordmark-small"/></a></header>
+    <h1>Incident Response Plan</h1>
+<p class="lastupdate">Document 05 of 5 · Last reviewed: <time datetime="2026-05-28">May 28, 2026</time></p>
+<p>This plan describes how we respond when something goes wrong with keyrotate — a vulnerability is reported, a supply-chain compromise is suspected, or a published release breaks production for users. Because keyrotate is a single-maintainer open-source project, the plan is deliberately simple.</p>
+
+<h2>What counts as an incident</h2>
+<ul>
+  <li>A confirmed security vulnerability in a published release (any severity).</li>
+  <li>A suspected compromise of our publishing credentials (npm token, GitHub release token, Homebrew tap write access).</li>
+  <li>A published release that corrupts data, leaks secrets, or otherwise causes harm when run as documented.</li>
+  <li>A defaced or compromised marketing site.</li>
+</ul>
+<p>Things that are <em>not</em> incidents (handled via normal issues / PRs): a missing feature, a confusing error message, a third-party CLI changing its interface, a destination provider returning an unexpected status.</p>
+
+<h2>Who responds</h2>
+<p>Steve Kinzey (<a href="https://github.com/SteveKinzey">@SteveKinzey</a>), the maintainer, is the primary responder. There is no on-call rotation. If you cannot reach the maintainer for a critical issue and the public good is at stake, you may publicly disclose after a 14-day silent period, per the safe-harbor clause in the <a href="vulnerability-disclosure.html">Vulnerability Disclosure</a> policy.</p>
+
+<h2>Response steps</h2>
+<ol>
+  <li><strong>Acknowledge</strong> the report or alert within 3 business days. Open a private GitHub Security Advisory to track the work.</li>
+  <li><strong>Triage</strong>: assess severity (low, medium, high, critical) and validate the report. Document expected blast radius.</li>
+  <li><strong>Contain</strong>: if a publishing credential is compromised, rotate it immediately using keyrotate itself. If a malicious release was published, yank it from npm (<code class="inline">npm unpublish</code> within the 72-hour window), revoke the GitHub Release, and pull the Homebrew Formula.</li>
+  <li><strong>Fix</strong>: produce a patch in a private branch. Verify the fix with a test that fails before the patch and passes after.</li>
+  <li><strong>Release</strong>: tag a new version, publish to all distribution channels, push the updated Homebrew Formula.</li>
+  <li><strong>Disclose</strong>: publish the GitHub Security Advisory once the fix is available. The advisory lists impact, affected versions, fixed version, workarounds, credit to the reporter, and a short post-mortem.</li>
+  <li><strong>Notify</strong>: post the advisory link in GitHub Discussions and to any contact channels you have provided.</li>
+</ol>
+
+<h2>Escalation criteria</h2>
+<ul>
+  <li><strong>Critical:</strong> a published release silently leaks secrets, exfiltrates data, or could be used to gain RCE on a user's machine without their consent. Response begins immediately on confirmation; we aim to publish a patched release within 24 hours.</li>
+  <li><strong>High:</strong> a vulnerability that allows an attacker to bypass intended access controls but requires non-trivial conditions. Targeted within 7 days.</li>
+  <li><strong>Medium / low:</strong> handled in the normal release cadence; called out in release notes when fixed.</li>
+</ul>
+
+<h2>Public running log</h2>
+<p>Past incidents are listed at the <a href="https://github.com/Prompto-Studio/keyrotate/security/advisories">GitHub Security Advisories</a> page for the repository. As of the date at the top of this document, no security incidents have been reported.</p>
+
+<h2>Post-mortem disclosure</h2>
+<p>For every confirmed incident, the published advisory will include a short post-mortem (what happened, why it was not caught earlier, what we changed). The goal is to help the wider community improve, not to deflect blame.</p>
+    <footer>
+      <div class="footer-row">
+        <div>MIT licensed · macOS · Linux · Windows</div>
+        <div>© <span id="y"></span> BotFlow Lab</div>
+      </div>
+      <div class="footer-legal">
+        <a href="trust.html">Trust &amp; Safety</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="https://github.com/Prompto-Studio/keyrotate/security/advisories">Report a vulnerability</a>
+      </div>
+    </footer>
+  </main>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

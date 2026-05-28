@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>keyrotate — Rotate any API key in one command</title>
+  <meta name="description" content="One-command API-key rotator. Updates 1Password, GitHub, Supabase, Netlify, Fly.io, and .env in a single shot — verified end-to-end. MIT-licensed. macOS, Linux, Windows."/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="stylesheet" href="styles.css"/>
+
+  <meta property="og:title" content="keyrotate — Rotate any API key in one command"/>
+  <meta property="og:description" content="Updates 1Password, GitHub, Supabase, Netlify, Fly.io, and .env in a single shot — verified end-to-end."/>
+  <meta property="og:image" content="https://botflowlabos.com/social-preview.png"/>
+  <meta property="og:url" content="https://botflowlabos.com"/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+</head>
+<body>
+  <main>
+    <header>
+      <a href="index.html"><img src="wordmark.svg" alt="keyrotate" class="wordmark"/></a>
+      <p class="tagline">Rotate any API key in one command — verified end-to-end.</p>
+      <p class="byline">Open source, MIT-licensed. Built by <a href="https://promptostudio.ai">Steve Kinzey</a> at BotFlow Lab.</p>
+    </header>
+
+    <section>
+      <h2>Install</h2>
+      <div class="install">
+        <div class="install-row"><div class="label">npx</div><code>npx keyrotate setup</code></div>
+        <div class="install-row"><div class="label">Homebrew</div><code>brew tap Prompto-Studio/homebrew-tap &amp;&amp; brew install keyrotate</code></div>
+        <div class="install-row"><div class="label">npm -g</div><code>npm install -g keyrotate</code></div>
+        <div class="install-row"><div class="label">curl</div><code>curl -fsSL https://raw.githubusercontent.com/Prompto-Studio/keyrotate/main/scripts/install.sh | bash</code></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Why it exists</h2>
+      <p>Rotating one API key isn't one step — it's six. The new key has to land in 1Password, in GitHub Actions, in Supabase, in your local <code class="inline">.env</code>, and be verified against the upstream provider before the old one is revoked.</p>
+      <p>Miss one and you've shipped a half-rotated key. The alert path breaks, or the old key stays alive, or your team's vault drifts out of sync. <strong>keyrotate</strong> does the whole rotation in one command, verifies the new key against the provider <em>before</em> writing anything, and leaves an audit log behind.</p>
+    </section>
+
+    <section>
+      <h2>One command, four destinations</h2>
+      <pre><span class="c">$</span> keyrotate rotate resend-alerts
+
+  Provider:     Resend
+  Destinations: 1Password, GitHub, Supabase
+  Create new at: https://resend.com/api-keys
+
+  <span class="ok">✓</span> 1Password ready (vault: Private)
+  <span class="ok">✓</span> gh ready, repo Prompto-Studio/Prompto-Bot-Img
+  <span class="ok">✓</span> supabase ready, project lubvpbxxwyy…
+
+  <span class="a">?</span> Paste the new Resend key (hidden): <span class="c">****</span>
+  <span class="ok">▸</span> Verifying against Resend…           <span class="ok">✓</span>
+  <span class="ok">▸</span> Writing to 1Password…                <span class="ok">✓</span>
+  <span class="ok">▸</span> Writing to GitHub Actions secret…    <span class="ok">✓</span>
+  <span class="ok">▸</span> Writing to Supabase Edge secret…     <span class="ok">✓</span>
+  <span class="ok">▸</span> Triggering test-alerts workflow…     <span class="ok">✓</span>
+
+  <span class="ok">✓</span> Rotation complete (3/3 destinations).</pre>
+    </section>
+
+    <section>
+      <h2>Verifies against</h2>
+      <div class="chips">
+        <span class="chip">Resend</span><span class="chip">OpenAI</span><span class="chip">Google Cloud</span>
+        <span class="chip">fal.ai</span><span class="chip">ElevenLabs</span><span class="chip">Stripe</span>
+        <span class="chip">Netlify</span><span class="chip">Supabase</span><span class="chip">HuggingFace</span>
+        <span class="chip">PostHog</span><span class="chip">AbuseIPDB</span><span class="chip">+ custom</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Writes to</h2>
+      <div class="chips">
+        <span class="chip">1Password</span><span class="chip">GitHub Actions</span>
+        <span class="chip">Supabase Edge</span><span class="chip">Netlify env</span>
+        <span class="chip">Fly.io secrets</span><span class="chip">.env file</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Get it</h2>
+      <div class="links">
+        <a href="https://github.com/Prompto-Studio/keyrotate" class="primary">GitHub repo →</a>
+        <a href="https://www.npmjs.com/package/keyrotate">npm package</a>
+        <a href="https://github.com/Prompto-Studio/keyrotate/discussions">Discussions</a>
+        <a href="https://github.com/sponsors/SteveKinzey">Sponsor ♥</a>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-row">
+        <div>MIT licensed · macOS · Linux · Windows</div>
+        <div>© <span id="y"></span> BotFlow Lab</div>
+      </div>
+      <div class="footer-legal">
+        <a href="trust.html">Trust &amp; Safety</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="https://github.com/Prompto-Studio/keyrotate/security/advisories">Report a vulnerability</a>
+      </div>
+    </footer>
+  </main>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

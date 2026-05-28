@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <style>
+    /* Slate ink in light mode, white in dark mode — so the icon is visible against either tab background */
+    .ink { stroke: #0F172A; fill: #0F172A; }
+    @media (prefers-color-scheme: dark) {
+      .ink { stroke: #FFFFFF; fill: #FFFFFF; }
+    }
+  </style>
+  <g class="ink" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="128" cy="76" r="36"/>
+    <path d="M 128 112 L 128 140 A 38 38 0 1 1 90 178"/>
+    <path d="M 128 132 L 152 132"/>
+    <path d="M 128 148 L 144 148"/>
+  </g>
+  <path class="ink" d="M 90 158 L 74 184 L 106 184 Z" stroke="none"/>
+</svg>

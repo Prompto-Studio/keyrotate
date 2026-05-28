@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Data Handling Notice — keyrotate</title>
+  <meta name="description" content="What keyrotate's website and CLI collect, share, and retain. Aligned with GDPR and CCPA."/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <main>
+    <header><a href="index.html"><img src="wordmark.svg" alt="keyrotate" class="wordmark-small"/></a></header>
+    <h1>Data Handling Notice</h1>
+<p class="lastupdate">Document 04 of 5 · Last reviewed: <time datetime="2026-05-28">May 28, 2026</time></p>
+<p>This notice describes what data keyrotate collects, where it goes, how long it is kept, and what rights you have over it. It applies to both the marketing website and the CLI tool. The bottom line: <strong>we do not collect personal data through the tool itself, and we collect the minimum possible on the website.</strong></p>
+
+<h2>The keyrotate CLI</h2>
+<p>The CLI <strong>does not collect any data</strong>. It does not make HTTP requests to any keyrotate-controlled server. There is no telemetry, no error reporting, no usage analytics, and no auto-update check. All operational state — your configuration, your rotation history — lives only on the machine where you run the tool.</p>
+
+<h3>Network calls made by the CLI</h3>
+<p>During a rotation, the CLI makes outbound HTTPS calls only to:</p>
+<ul>
+  <li>The <strong>upstream provider</strong> you are rotating a key for (e.g. <code class="inline">api.openai.com</code>), to verify the new key.</li>
+  <li>The <strong>destinations</strong> you have configured (e.g. <code class="inline">api.github.com</code>, <code class="inline">api.netlify.com</code>) — usually delegated to that destination's official CLI.</li>
+</ul>
+<p>That is all. No traffic flows to keyrotate or BotFlow Lab.</p>
+
+<h3>Local files written by the CLI</h3>
+<ul>
+  <li><code class="inline">~/.config/keyrotate/audit.log</code> — JSONL log of rotation outcomes. Records timestamp, provider, destinations attempted/succeeded/failed, verifier result, your local username. <strong>Never the key value.</strong> Mode <code class="inline">0600</code>.</li>
+  <li>Any <code class="inline">.env</code> files you configure as destinations — written with mode <code class="inline">0600</code>.</li>
+</ul>
+
+<h2>The marketing website (botflowlabos.com)</h2>
+<p>The site is a static page hosted on Netlify. We do not run analytics, advertising trackers, cookies, or fingerprinting.</p>
+
+<h3>What Netlify automatically logs</h3>
+<ul>
+  <li>Your IP address (for abuse prevention and basic request routing).</li>
+  <li>The page URL you requested, your User-Agent string, the Referer header, and the response status.</li>
+  <li>Standard CDN access logs, retained by Netlify for up to 30 days under their access-log retention policy.</li>
+</ul>
+<p>BotFlow Lab does not export, archive, or analyze these logs except where needed to respond to a security incident or comply with law. See <a href="https://www.netlify.com/privacy/">Netlify's Privacy Notice</a> for their full data handling.</p>
+
+<h3>What the website does not do</h3>
+<ul>
+  <li>No cookies.</li>
+  <li>No third-party analytics, advertising, or tracking scripts.</li>
+  <li>No newsletter signup, no account creation, no form submissions.</li>
+  <li>No social-media embeds that beacon back to their hosts.</li>
+</ul>
+
+<h2>Your rights</h2>
+<p>Because we collect essentially nothing tied to you, we usually cannot honor an "access" or "deletion" request — there is no record to retrieve. If you believe Netlify holds CDN logs about your requests to botflowlabos.com and you wish to exercise GDPR / CCPA / PDPA rights over those logs, contact <a href="mailto:privacy@botflowlabos.com">privacy@botflowlabos.com</a> and we will coordinate with Netlify on your behalf.</p>
+
+<h2>Children</h2>
+<p>keyrotate is a security utility for operators and developers. It is not directed at children under 13 and we do not knowingly collect data from them.</p>
+
+<h2>Changes</h2>
+<p>We may update this notice. Material changes will be reflected in the "Last reviewed" date at the top and announced via the GitHub repository.</p>
+    <footer>
+      <div class="footer-row">
+        <div>MIT licensed · macOS · Linux · Windows</div>
+        <div>© <span id="y"></span> BotFlow Lab</div>
+      </div>
+      <div class="footer-legal">
+        <a href="trust.html">Trust &amp; Safety</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="https://github.com/Prompto-Studio/keyrotate/security/advisories">Report a vulnerability</a>
+      </div>
+    </footer>
+  </main>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

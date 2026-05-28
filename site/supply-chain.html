@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Supply Chain Integrity — keyrotate</title>
+  <meta name="description" content="How keyrotate binaries are built, how to verify SHA256s, and how to build from source."/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <main>
+    <header><a href="index.html"><img src="wordmark.svg" alt="keyrotate" class="wordmark-small"/></a></header>
+    <h1>Supply Chain Integrity</h1>
+<p class="lastupdate">Document 02 of 5 · Last reviewed: <time datetime="2026-05-28">May 28, 2026</time></p>
+<p>This document explains how the binaries you install are produced, how to verify them, and how to skip the prebuilts entirely if you prefer to build from source.</p>
+
+<h2>How binaries are built</h2>
+<p>Every tagged release triggers a GitHub Actions workflow (<a href="https://github.com/Prompto-Studio/keyrotate/blob/main/.github/workflows/release.yml">.github/workflows/release.yml</a>) that:</p>
+<ol>
+  <li>Checks out the tagged commit.</li>
+  <li>Installs the pinned Bun version on a fresh <code class="inline">ubuntu-latest</code> runner.</li>
+  <li>Cross-compiles the same TypeScript source four times: <code class="inline">bun-darwin-arm64</code>, <code class="inline">bun-darwin-x64</code>, <code class="inline">bun-linux-x64</code>, <code class="inline">bun-windows-x64</code>.</li>
+  <li>Packages each binary as a tarball (zip for Windows), computes its SHA256, attaches all four artifacts to the GitHub Release, and publishes the same binaries as platform-specific npm packages under <code class="inline">@prompto-studio/keyrotate-&lt;platform&gt;</code>.</li>
+  <li>Auto-renders a Homebrew Formula with the same SHA256s and attaches it to the release.</li>
+</ol>
+<p>No human touches the artifacts between source and release. The workflow runs in a public log you can audit.</p>
+
+<h2>Verifying a downloaded binary</h2>
+<p>Every GitHub Release page lists the SHA256 of each archive. To verify a download manually:</p>
+<pre><span class="c"># macOS / Linux</span>
+shasum -a 256 keyrotate-darwin-arm64.tar.gz
+<span class="c"># Compare against the SHA shown on the release page</span></pre>
+<p>If the hash does not match what GitHub published, do not install. Open an issue.</p>
+
+<h2>Verifying via Homebrew</h2>
+<p>The Homebrew Formula pins each download's SHA256. <code class="inline">brew install</code> verifies the hash automatically before extracting the binary. A mismatch causes the install to fail loudly.</p>
+
+<h2>Verifying via npm</h2>
+<p>npm computes a SHA512 integrity hash for every published tarball and verifies it on install. The integrity hash is visible on each package's npmjs.com page and in your <code class="inline">package-lock.json</code>.</p>
+
+<h2>Building from source</h2>
+<p>If you would rather not trust the prebuilt binaries, build keyrotate yourself from the public source. Build dependencies: <a href="https://bun.sh">Bun</a> 1.2 or newer. No other runtime needed — the resulting binary is statically linked.</p>
+<pre><span class="c">git clone https://github.com/Prompto-Studio/keyrotate.git
+cd keyrotate
+git checkout v00.00.15            </span><span class="c"># pin a specific release tag</span><span class="c">
+bun install --frozen-lockfile
+bun build src/cli.ts --compile --target=bun-darwin-arm64 --outfile dist/keyrotate
+./dist/keyrotate version</span></pre>
+<p>The resulting <code class="inline">dist/keyrotate</code> is byte-identical to the published binary for the same tag and target. Confirm by computing its SHA256 and comparing against the release.</p>
+
+<h2>Dependencies</h2>
+<p>keyrotate has exactly one runtime npm dependency: <a href="https://www.npmjs.com/package/@iarna/toml"><code class="inline">@iarna/toml</code></a> for parsing <code class="inline">keyrotate.toml</code>. All other functionality uses Bun's standard library. The lockfile is committed; Dependabot tracks updates.</p>
+
+<h2>What changed in this release</h2>
+<p>Every release publishes auto-generated release notes derived from the merged pull requests and direct commits since the previous tag. Browse them at <a href="https://github.com/Prompto-Studio/keyrotate/releases">github.com/Prompto-Studio/keyrotate/releases</a>.</p>
+    <footer>
+      <div class="footer-row">
+        <div>MIT licensed · macOS · Linux · Windows</div>
+        <div>© <span id="y"></span> BotFlow Lab</div>
+      </div>
+      <div class="footer-legal">
+        <a href="trust.html">Trust &amp; Safety</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="https://github.com/Prompto-Studio/keyrotate/security/advisories">Report a vulnerability</a>
+      </div>
+    </footer>
+  </main>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
