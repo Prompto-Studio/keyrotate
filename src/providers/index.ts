@@ -10,11 +10,19 @@ import { supabase } from "./supabase.ts";
 import { huggingface } from "./huggingface.ts";
 import { posthog } from "./posthog.ts";
 import { abuseipdb } from "./abuseipdb.ts";
+import { anthropic } from "./anthropic.ts";
+import { aws } from "./aws.ts";
+import { cloudflare } from "./cloudflare.ts";
+import { dropbox } from "./dropbox.ts";
+import { githubPat } from "./github-pat.ts";
+import { vercel } from "./vercel.ts";
 import { generic } from "./generic.ts";
 
 const REGISTRY: Provider[] = [
-  resend, openai, googleCloud, fal, elevenlabs, stripe,
-  netlify, supabase, huggingface, posthog, abuseipdb, generic,
+  resend, openai, anthropic, googleCloud, fal, elevenlabs, stripe,
+  netlify, supabase, huggingface, posthog, abuseipdb,
+  aws, cloudflare, dropbox, githubPat, vercel,
+  generic,
 ];
 export function getProvider(id: string): Provider | null {
   return REGISTRY.find((p) => p.id === id) ?? null;

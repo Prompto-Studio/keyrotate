@@ -1,7 +1,12 @@
 name: Release
 
-# Builds standalone binaries for macOS (arm64 + x64) and Linux (x64) on tag push,
-# tarballs them, attaches to the GitHub Release, prints the SHA256 in the summary.
+# Builds standalone binaries for macOS arm64, macOS x64, and Linux x64 on tag
+# push. ALL builds happen on a single ubuntu-latest runner — Bun supports
+# cross-compilation for every target via `bun build --compile --target=`, so we
+# don't pay the macos queue tax or run extra runners just to produce binaries.
+#
+# Tarballs are attached to the GitHub Release; the Formula/keyrotate.rb is
+# auto-rendered from the resulting SHA256s and attached to the release as well.
 #
 # To cut a release:
 #   bun version patch && git push && git push --tags
@@ -15,59 +20,39 @@ permissions:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: macos-14         # Apple Silicon
-            target: bun-darwin-arm64
-            artifact: keyrotate-darwin-arm64
-          - os: ubuntu-latest    # Linux x64
-            target: bun-linux-x64
-            artifact: keyrotate-linux-x64
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with: { bun-version: latest }
       - run: bun install --frozen-lockfile
-      - run: bun build src/cli.ts --compile --target=${{ matrix.target }} --outfile dist/keyrotate
-      - name: Tarball + SHA
-        run: |
-          cd dist
-          tar -czf "../${{ matrix.artifact }}.tar.gz" keyrotate
-          cd ..
-          sha=$(shasum -a 256 "${{ matrix.artifact }}.tar.gz" | awk '{print $1}')
-          echo "sha256=$sha" >> $GITHUB_OUTPUT
-          echo "### ${{ matrix.artifact }}" >> $GITHUB_STEP_SUMMARY
-          echo "\`sha256: $sha\`" >> $GITHUB_STEP_SUMMARY
-        id: sha
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ matrix.artifact }}.tar.gz
-          generate_release_notes: true
-          fail_on_unmatched_files: true
 
-  update-formula:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      - name: Cross-compile all three targets
+        run: |
+          mkdir -p dist
+          for t in bun-darwin-arm64 bun-darwin-x64 bun-linux-x64; do
+            short=${t#bun-}
+            echo "→ building $short"
+            bun build src/cli.ts --compile --target=$t --outfile dist/keyrotate
+            cd dist
+            tar -czf "../keyrotate-${short}.tar.gz" keyrotate
+            cd ..
+            rm dist/keyrotate
+          done
+          ls -la keyrotate-*.tar.gz
+
       - name: Compute SHA256s
         id: sha
         run: |
           v="${GITHUB_REF_NAME#v}"
           echo "version=$v" >> $GITHUB_OUTPUT
           for arch in darwin-arm64 darwin-x64 linux-x64; do
-            url="https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/keyrotate-${arch}.tar.gz"
-            # Poll up to 60s for the release asset to be queryable
-            for i in 1 2 3 4 5 6; do
-              if curl -fsSL -o "/tmp/kr-${arch}.tar.gz" "$url"; then break; fi
-              sleep 10
-            done
-            sha=$(shasum -a 256 "/tmp/kr-${arch}.tar.gz" | awk '{print $1}')
-            echo "sha_${arch//-/_}=$sha" >> $GITHUB_OUTPUT
+            sha=$(shasum -a 256 "keyrotate-${arch}.tar.gz" | awk '{print $1}')
+            echo "sha_$(echo $arch | tr - _)=$sha" >> $GITHUB_OUTPUT
+            echo "$arch: $sha"
           done
+
       - name: Render Formula
         run: |
           mkdir -p Formula
@@ -104,11 +89,15 @@ jobs:
             end
           end
           RUBY
-      - name: Upload formula to release
+          cat Formula/keyrotate.rb
+
+      - name: Attach all artifacts to release
         uses: softprops/action-gh-release@v2
         with:
-          files: Formula/keyrotate.rb
-      - uses: actions/upload-artifact@v4
-        with:
-          name: keyrotate-formula
-          path: Formula/keyrotate.rb
+          files: |
+            keyrotate-darwin-arm64.tar.gz
+            keyrotate-darwin-x64.tar.gz
+            keyrotate-linux-x64.tar.gz
+            Formula/keyrotate.rb
+          generate_release_notes: true
+          fail_on_unmatched_files: true
