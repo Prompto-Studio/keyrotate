@@ -1,12 +1,19 @@
 {
   "name": "keyrotate-win32-x64",
-  "version": "0.10.0",
-  "description": "win32-x64 binary for keyrotate. Do not install directly — `npm install keyrotate` selects the right one automatically.",
+  "version": "0.11.0",
+  "description": "Windows x64 binary for keyrotate — the one-command API-key rotator that updates 1Password, GitHub, Supabase, Netlify, Fly.io, and .env files in a single command. This is a platform-specific binary package and should not be installed directly; install `keyrotate` instead and npm will select the correct binary for your OS.",
   "os": ["win32"],
   "cpu": ["x64"],
-  "files": ["bin"],
+  "files": ["bin", "README.md", "LICENSE"],
   "engines": { "node": ">=18" },
   "license": "MIT",
+  "author": "BotFlow Lab",
   "repository": { "type": "git", "url": "git+https://github.com/Prompto-Studio/keyrotate.git" },
-  "homepage": "https://github.com/Prompto-Studio/keyrotate#readme"
+  "homepage": "https://github.com/Prompto-Studio/keyrotate#readme",
+  "bugs": "https://github.com/Prompto-Studio/keyrotate/issues",
+  "keywords": [
+    "keyrotate", "windows", "win32", "x64", "binary", "api-key", "secrets",
+    "rotation", "1password", "github-actions", "supabase", "netlify", "fly",
+    "devops", "security", "cli", "secret-management"
+  ]
 }
