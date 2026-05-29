@@ -10,3 +10,6 @@ bun.lock
 bun.lockb
 .idea/
 .vscode/
+
+# Local Netlify folder
+.netlify

@@ -4,6 +4,8 @@
 
 ### Rotate any API key in one command. Update 1Password, GitHub, Supabase, Netlify, Fly.io, and your `.env` in one shot — verified end-to-end.
 
+**🌐 [keyrotate.dev](https://keyrotate.dev)**
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Made with Bun](https://img.shields.io/badge/runtime-Bun-fbf0df.svg)](https://bun.sh)
 [![macOS Apple Silicon](https://img.shields.io/badge/macOS-Apple%20Silicon-black?logo=apple)](#install)

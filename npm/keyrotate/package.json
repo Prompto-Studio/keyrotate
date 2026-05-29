@@ -25,7 +25,7 @@
     "type": "git",
     "url": "git+https://github.com/Prompto-Studio/keyrotate.git"
   },
-  "homepage": "https://github.com/Prompto-Studio/keyrotate#readme",
+  "homepage": "https://keyrotate.dev",
   "bugs": "https://github.com/Prompto-Studio/keyrotate/issues",
   "keywords": [
     "api-key",
