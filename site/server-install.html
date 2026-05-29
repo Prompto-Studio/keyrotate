@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Server install — keyrotate</title>
+  <meta name="description" content="Install and run keyrotate on a Linux server, Windows machine, or inside Docker. Headless auth via Bitwarden API keys; cross-OS .env destination."/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <main>
+    <header><a href="index.html"><img src="wordmark.svg" alt="keyrotate" class="wordmark-small"/></a></header>
+
+    <h1>Server install</h1>
+    <p class="lastupdate">Last reviewed: <time datetime="2026-05-29">May 29, 2026</time></p>
+    <p>The main install paths (<code class="inline">npx</code>, Homebrew, <code class="inline">npm -g</code>) assume you're on a desktop. This page covers the other cases: running keyrotate on a Linux server / VPS / bastion / CI runner / Docker, on Windows, and how to authenticate to your vault without biometrics.</p>
+
+    <h2>Linux server (headless VPS / bastion / CI)</h2>
+    <p>The smallest install — drop a single static binary on the box, sign in once.</p>
+    <pre><span class="c"># 1. Install the binary (single file, no Node/Bun runtime required)</span>
+curl -fsSL https://raw.githubusercontent.com/Prompto-Studio/keyrotate/main/scripts/install.sh | bash
+<span class="c"># puts keyrotate (and `kr` alias) at ~/bin/</span>
+
+<span class="c"># 2. Install destination CLIs you need (apt example)</span>
+sudo apt update &amp;&amp; sudo apt install -y unzip
+<span class="c"># GitHub CLI</span>
+type -p curl &gt;/dev/null || sudo apt install -y curl
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list
+sudo apt update &amp;&amp; sudo apt install -y gh
+
+<span class="c"># Bitwarden CLI (recommended vault for headless boxes — see below)</span>
+npm install -g @bitwarden/cli   <span class="c"># requires Node 18+</span></pre>
+
+    <h3>Headless vault auth: pick Bitwarden, not 1Password</h3>
+    <p>1Password's <code class="inline">op</code> CLI requires biometric unlock by default — fine on a Mac, painful on a headless server. The cleanest headless story is <strong>Bitwarden</strong>, whose <code class="inline">bw</code> CLI supports a fully non-interactive API-key login that you can drop into systemd or a Docker entrypoint.</p>
+    <pre><span class="c"># 1. Generate an API key in Bitwarden web vault → Settings → My Account → API Key</span>
+<span class="c"># 2. Export the credentials</span>
+export BW_CLIENTID="user.xxxxxx"
+export BW_CLIENTSECRET="xxxxx"
+export BW_PASSWORD="your-master-password"
+
+<span class="c"># 3. Authenticate and unlock — no prompts</span>
+bw login --apikey
+export BW_SESSION="$(bw unlock --passwordenv BW_PASSWORD --raw)"
+
+<span class="c"># 4. keyrotate can now write to Bitwarden without further input</span>
+keyrotate doctor      <span class="c"># confirms `bw` reachable + unlocked</span>
+keyrotate rotate openai</pre>
+    <p>Store <code class="inline">BW_CLIENTID</code> / <code class="inline">BW_CLIENTSECRET</code> / <code class="inline">BW_PASSWORD</code> in <code class="inline">/etc/keyrotate.env</code> with mode <code class="inline">0600</code>, or in your CI's secret store. The <code class="inline">BW_SESSION</code> token expires; either re-unlock per cron run or pin a long-lived session in <code class="inline">/run/keyrotate/session</code> with a systemd unit that refreshes it.</p>
+
+    <h3>Running rotations from a cron job</h3>
+    <pre><span class="c"># /etc/cron.d/keyrotate-weekly  — Sunday 03:00, rotate the Resend key</span>
+0 3 * * 0  steve  /home/steve/bin/keyrotate rotate resend-alerts &gt;&gt; /var/log/keyrotate.log 2&gt;&amp;1</pre>
+    <p>For interactive providers (anything where the rotate flow prompts for a value), the cron version isn't going to ask you for a key — you'd need v00.00.17's auto-rotation feature (<code class="inline">create()</code> capability) which generates the new key over the provider's API. That ships in the next release.</p>
+
+    <h2>Docker</h2>
+    <p>A minimal image suitable for one-shot rotations or a long-running scheduled container:</p>
+    <pre>FROM debian:bookworm-slim
+RUN apt-get update &amp;&amp; apt-get install -y --no-install-recommends \
+      curl ca-certificates gnupg nodejs npm \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+RUN curl -fsSL https://raw.githubusercontent.com/Prompto-Studio/keyrotate/main/scripts/install.sh | bash
+RUN npm install -g @bitwarden/cli
+ENV PATH="/root/bin:${PATH}"
+WORKDIR /app
+COPY keyrotate.toml ./
+ENTRYPOINT ["keyrotate"]
+CMD ["doctor"]</pre>
+    <p>Run with vault creds injected from the host's secret store:</p>
+    <pre>docker run --rm \
+  -e BW_CLIENTID -e BW_CLIENTSECRET -e BW_PASSWORD \
+  -v $(pwd)/keyrotate.toml:/app/keyrotate.toml:ro \
+  yourorg/keyrotate \
+  rotate resend-alerts</pre>
+
+    <h2>Windows</h2>
+    <p>keyrotate ships a Windows x64 binary. Install via npm or the curl-equivalent PowerShell flow:</p>
+    <pre><span class="c"># 1. Install Node 18+ from https://nodejs.org/ or via winget</span>
+winget install OpenJS.NodeJS.LTS
+
+<span class="c"># 2. Install keyrotate</span>
+npm install -g keyrotate
+
+<span class="c"># 3. Install destination CLIs you need</span>
+winget install 1Password.CLI       <span class="c"># `op` — interactive vault</span>
+winget install GitHub.CLI          <span class="c"># `gh`</span>
+winget install Supabase.CLI
+winget install Netlify.Netlify
+winget install Fly-io.flyctl
+
+<span class="c"># 4. Sign each one in</span>
+op signin
+gh auth login
+supabase login
+netlify login
+flyctl auth login
+
+<span class="c"># 5. Verify keyrotate sees them all</span>
+keyrotate doctor</pre>
+
+    <h3>.env files on Windows</h3>
+    <p>The <code class="inline">envfile</code> destination uses Node's <code class="inline">path.resolve()</code>, which is fully Windows-aware. <code class="inline">.env</code> files work identically on Windows — same format, same semantics. Point at either a relative path (<code class="inline">.env.local</code>) or an absolute one (<code class="inline">C:\\Users\\you\\project\\.env</code>).</p>
+    <p>If you'd rather set machine-wide environment variables instead of a <code class="inline">.env</code> file (rare in modern dev workflows but supported by Windows):</p>
+    <pre><span class="c"># PowerShell — set a user-scoped persistent env var</span>
+[Environment]::SetEnvironmentVariable("OPENAI_API_KEY", "sk-…", "User")</pre>
+    <p>This isn't currently a destination plugin — most projects expect a <code class="inline">.env</code> file. If you have a strong use case for system-env destinations, open a Discussion and we'll consider it.</p>
+
+    <h3>Cron equivalent on Windows: Task Scheduler</h3>
+    <pre>schtasks /create /tn "keyrotate-daily" `
+  /tr "C:\Users\you\AppData\Roaming\npm\keyrotate.cmd doctor --check-rotations" `
+  /sc daily /st 09:00</pre>
+
+    <h2>Importing existing keys (any OS)</h2>
+    <p>The most common server-install scenario isn't "I'm rotating" — it's "I already have keys in <code class="inline">.env</code> and I want to bring them under management without making new ones." For that:</p>
+    <pre><span class="c"># 1. Scan everywhere keyrotate can read for existing keys</span>
+keyrotate discover
+
+<span class="c"># 2. For each provider you found, add a rotation in keyrotate.toml</span>
+<span class="c">#    (either via `keyrotate setup` interactively, or by editing the file directly)</span>
+
+<span class="c"># 3. Import the existing key — it's verified against the provider, then</span>
+<span class="c">#    written to all destinations (1Password / Bitwarden / GitHub / .env / etc).</span>
+<span class="c">#    Nothing is rotated; nothing is revoked.</span>
+keyrotate import openai
+keyrotate import resend-alerts
+keyrotate import stripe</pre>
+    <p>From that point on, all subsequent rotations go through keyrotate. The audit log records the import as the first event in each key's history.</p>
+
+    <h2>Troubleshooting</h2>
+    <ul>
+      <li><strong><code class="inline">bw status</code> says "locked"</strong> — your <code class="inline">BW_SESSION</code> expired. Run <code class="inline">export BW_SESSION="$(bw unlock --passwordenv BW_PASSWORD --raw)"</code> again, or pin a session token via a systemd timer.</li>
+      <li><strong><code class="inline">op</code> requires Touch ID on Linux</strong> — it doesn't have Touch ID. Use Bitwarden instead, or use 1Password Connect (self-hosted Docker container with service-account auth). Connect is a heavier lift but the most secure option for enterprise deployments.</li>
+      <li><strong>Cron rotation fails silently</strong> — cron's PATH doesn't include <code class="inline">~/bin</code> by default. Either use the absolute path to the keyrotate binary in your crontab line, or set <code class="inline">PATH=/usr/local/bin:/home/you/bin:/usr/bin:/bin</code> at the top of the crontab.</li>
+    </ul>
+
+    <footer>
+      <div class="footer-row">
+        <div>MIT licensed · macOS · Linux · Windows</div>
+        <div>© <span id="y"></span> BotFlow Lab</div>
+      </div>
+      <div class="footer-legal">
+        <a href="trust.html">Trust &amp; Safety</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="https://github.com/Prompto-Studio/keyrotate/security/advisories">Report a vulnerability</a>
+      </div>
+    </footer>
+  </main>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

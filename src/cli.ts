@@ -8,6 +8,9 @@ import { cmdInit } from "./commands/init.ts";
 import { cmdDoctor } from "./commands/doctor.ts";
 import { cmdVerifyAll } from "./commands/verifyAll.ts";
 import { cmdSetup } from "./commands/setup.ts";
+import { cmdAddCustom } from "./commands/addCustom.ts";
+import { cmdDiscover } from "./commands/discover.ts";
+import { cmdImport } from "./commands/import.ts";
 
 // Cosmetic version — keyrotate uses a zero-padded "00.00.NN" display scheme.
 // package.json stays at semver-valid "0.4.0" (npm/bun reject leading zeros);
@@ -29,6 +32,9 @@ ${c.bold("Commands:")}
   ${c.cyan("verify <name>")}   Verify a single key (prompts for value)
   ${c.cyan("verify-all")}      Read-only health check of every key in keyrotate.toml
   ${c.cyan("audit [N]")}       Show the last N rotations (default 20)
+  ${c.cyan("add-custom <id>")} Interactive wizard for a custom API provider
+  ${c.cyan("discover")}        Scan .env / 1Password / Bitwarden for existing keys (read-only)
+  ${c.cyan("import <name>")}   First-time import of an existing key into the vault
   ${c.cyan("help")}            Show this message
   ${c.cyan("version")}         Print version
 
@@ -50,6 +56,9 @@ async function main() {
     case "verify":      return await cmdVerify(rest);
     case "verify-all":  return await cmdVerifyAll();
     case "audit":       return await cmdAudit(rest);
+    case "add-custom":  return await cmdAddCustom(rest);
+    case "discover":    return await cmdDiscover();
+    case "import":      return await cmdImport(rest);
     default:
       log.err(`Unknown command: ${cmd}`);
       console.log(HELP);

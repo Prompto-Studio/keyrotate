@@ -112,6 +112,29 @@ jobs:
           RUBY
           cat Formula/keyrotate.rb
 
+      - name: Push Formula to Homebrew tap (auto-sync)
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          if [[ -z "${GH_TOKEN:-}" ]]; then
+            echo "::warning::HOMEBREW_TAP_TOKEN not set — skipping tap auto-sync. Add the secret to enable."
+            exit 0
+          fi
+          # Clone the tap, copy our rendered Formula, commit, push.
+          git config --global user.name  "keyrotate-release-bot"
+          git config --global user.email "release-bot@users.noreply.github.com"
+          git clone "https://${GH_TOKEN}@github.com/Prompto-Studio/homebrew-tap.git" tap
+          cp Formula/keyrotate.rb tap/Formula/keyrotate.rb
+          cd tap
+          if git diff --quiet; then
+            echo "Formula unchanged; nothing to push."
+          else
+            git add Formula/keyrotate.rb
+            git commit -m "keyrotate ${{ steps.sha.outputs.v_display }} (semver ${{ steps.sha.outputs.version }})"
+            git push origin HEAD
+            echo "::notice::Pushed updated Formula to Prompto-Studio/homebrew-tap"
+          fi
+
       - name: Attach all artifacts to release
         uses: softprops/action-gh-release@v2
         with:
