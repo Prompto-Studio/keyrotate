@@ -12,6 +12,7 @@ import { cmdAddCustom } from "./commands/addCustom.ts";
 import { cmdDiscover } from "./commands/discover.ts";
 import { cmdImport } from "./commands/import.ts";
 import { cmdAutoRotate } from "./commands/autoRotate.ts";
+import { cmdCheckRotations } from "./commands/checkRotations.ts";
 
 // Cosmetic version — keyrotate uses a zero-padded "00.00.NN" display scheme.
 // package.json stays at semver-valid "0.4.0" (npm/bun reject leading zeros);
@@ -37,6 +38,7 @@ ${c.bold("Commands:")}
   ${c.cyan("discover")}        Scan .env / 1Password / Bitwarden for existing keys (read-only)
   ${c.cyan("import <name>")}   First-time import of an existing key into the vault
   ${c.cyan("auto-rotate <name>")} Zero-prompt rotation (Resend/PostHog; uses provider create() API)
+  ${c.cyan("check-rotations")} Print rotations due/overdue; --email sends summary via your Resend key
   ${c.cyan("help")}            Show this message
   ${c.cyan("version")}         Print version
 
@@ -62,6 +64,7 @@ async function main() {
     case "discover":    return await cmdDiscover();
     case "import":      return await cmdImport(rest);
     case "auto-rotate": return await cmdAutoRotate(rest);
+    case "check-rotations": return await cmdCheckRotations(rest);
     default:
       log.err(`Unknown command: ${cmd}`);
       console.log(HELP);
