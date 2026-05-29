@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" role="img" aria-label="keyrotate">
+  <title>keyrotate</title>
+  <g stroke="#F8FAFC" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="128" cy="76" r="36"/>
+    <path d="M 128 112 L 128 140 A 38 38 0 1 1 90 178"/>
+    <path d="M 128 132 L 152 132"/>
+    <path d="M 128 148 L 144 148"/>
+  </g>
+  <path d="M 90 158 L 74 184 L 106 184 Z" fill="#F8FAFC"/>
+</svg>
