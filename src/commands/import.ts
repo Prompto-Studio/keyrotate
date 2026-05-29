@@ -90,16 +90,17 @@ export async function cmdImport(argv: string[]): Promise<number> {
     else { log.err(r.detail); failed.push(dId); }
   }
 
+  const outcome: "success" | "partial" | "failure" = failed.length === 0 ? "success" : succeeded.length > 0 ? "partial" : "failure";
   appendAudit({
     timestamp: nowIso(),
-    action: "import",
     rotation: name,
     provider: provider.id,
     destinations_attempted: dests,
     destinations_succeeded: succeeded,
-    destinations_failed: failed,
-    verifier_ok: true,
+    destinations_failed: failed.map((id) => ({ id, error: "see stdout" })),
+    verify: v,
     operator: process.env.USER ?? "unknown",
+    outcome,
   });
 
   console.log();

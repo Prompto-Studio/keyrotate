@@ -20,6 +20,29 @@ export interface Provider {
   configKeys?: string[];
   /** Hit a cheap, idempotent endpoint to confirm the key is live. */
   verify(key: string, opts?: Record<string, string>): Promise<VerifyResult>;
+  /**
+   * Optional: programmatically create a new API key by calling the provider's
+   * own API. Requires the OLD key as auth (chicken-and-egg: bootstrap still
+   * needs a manual paste). Used by the auto-rotation flow in `rotate --auto`.
+   * Returns { ok: true, key: "...", id?: "..." } on success.
+   * If the provider has no public "create key" endpoint, omit this — keyrotate
+   * gracefully falls back to the paste flow.
+   */
+  create?(oldKey: string, opts?: Record<string, string>): Promise<CreateResult>;
+  /**
+   * Optional: revoke an old key by ID after rotation. The id is whatever the
+   * provider returns from create() (usually the API's internal key ID).
+   */
+  revoke?(oldKeyOrId: string, opts?: Record<string, string>): Promise<VerifyResult>;
+}
+
+export interface CreateResult {
+  ok: boolean;
+  /** The new API key value (only present on success). */
+  key?: string;
+  /** Optional internal ID for the new key (used later by revoke()). */
+  id?: string;
+  detail: string;
 }
 
 export interface WriteResult { ok: boolean; detail: string; }
