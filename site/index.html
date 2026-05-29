@@ -81,6 +81,38 @@
     </section>
 
     <section>
+      <h2>Commands</h2>
+      <div class="install">
+        <div class="install-row"><div class="label">setup</div><code>Interactive guided setup for any project</code></div>
+        <div class="install-row"><div class="label">init</div><code>Scaffold a minimal keyrotate.toml</code></div>
+        <div class="install-row"><div class="label">discover</div><code>Scan .env / 1Password / Bitwarden for existing keys (read-only)</code></div>
+        <div class="install-row"><div class="label">import</div><code>First-time import of an existing key into the vault</code></div>
+        <div class="install-row"><div class="label">add-custom</div><code>30-second wizard for any custom API provider</code></div>
+        <div class="install-row"><div class="label">rotate</div><code>Interactive rotation — paste a new key</code></div>
+        <div class="install-row"><div class="label">auto-rotate</div><code>Zero-prompt rotation (Resend / PostHog)</code></div>
+        <div class="install-row"><div class="label">verify</div><code>Verify a single key against its provider</code></div>
+        <div class="install-row"><div class="label">verify-all</div><code>Read-only health check of every key</code></div>
+        <div class="install-row"><div class="label">check-rotations</div><code>What's due — supports --email via your own Resend key</code></div>
+        <div class="install-row"><div class="label">self-check</div><code>doctor + discover + check-rotations in one pass</code></div>
+        <div class="install-row"><div class="label">doctor</div><code>Diagnose missing CLIs / auth / destination config</code></div>
+        <div class="install-row"><div class="label">audit</div><code>Show the last N rotations (default 20)</code></div>
+        <div class="install-row"><div class="label">github-oauth</div><code>OAuth device flow for a GitHub OAuth token</code></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>What's new in v00.00.19</h2>
+      <p>Last sprint shipped four versions back-to-back, focused on onboarding and unattended operation.</p>
+      <ul>
+        <li><strong>v00.00.16</strong> — Bitwarden destination, <code class="inline">discover</code> scanner across <code class="inline">.env</code> / 1Password / Bitwarden, <code class="inline">import</code> for first-time onboarding, <code class="inline">add-custom</code> 30-second wizard, full server / Docker / Windows install docs.</li>
+        <li><strong>v00.00.17</strong> — <code class="inline">Provider.create()</code> capability and <code class="inline">auto-rotate</code> command for fully unattended rotations against Resend and PostHog.</li>
+        <li><strong>v00.00.18</strong> — <code class="inline">rotate_every</code> policies and <code class="inline">check-rotations</code> with optional email summary via the user's own Resend key (zero infrastructure on our side).</li>
+        <li><strong>v00.00.19</strong> — GitHub OAuth device flow (returns an OAuth token, not a PAT — honest about the limit) and <code class="inline">self-check</code> aggregate command.</li>
+      </ul>
+      <p><a href="https://github.com/Prompto-Studio/keyrotate/releases">Full release notes →</a></p>
+    </section>
+
+    <section>
       <h2>Get it</h2>
       <div class="links">
         <a href="https://github.com/Prompto-Studio/keyrotate" class="primary">GitHub repo →</a>

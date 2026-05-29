@@ -265,12 +265,13 @@ Coming soon: Anthropic, AWS, Cloudflare, Dropbox, Google OAuth, Backblaze B2, Fl
 
 | Destination | ID | CLI needed | What it does |
 |---|---|---|---|
-| **1Password** | `onepassword` | `op` | Default canonical store. Auto-creates the item if missing; updates `credential` + `rotated_at` metadata otherwise. |
+| **1Password** | `onepassword` | `op` | Default canonical store. Auto-creates the item if missing; updates `credential` + `rotated_at` metadata otherwise. Best for desktop / interactive use. |
+| **Bitwarden** | `bitwarden` | `bw` | Alternative canonical vault. **Recommended for headless / server use** — supports fully non-interactive `BW_CLIENTID` / `BW_CLIENTSECRET` API-key auth. |
 | **GitHub Actions secrets** | `github` | `gh` | Repo-scoped Actions secret. |
 | **Supabase Edge Function secrets** | `supabase` | `supabase` | Project-scoped function secret. |
 | **Netlify env vars** | `netlify` | `netlify` | Per-context site env var. |
 | **Fly.io app secrets** | `flyio` | `flyctl` | Staged with `--stage` (deploy to apply). |
-| **Local `.env` file** | `envfile` | — | `NAME=VALUE` line, idempotent rewrite. Mode `0600`. |
+| **Local `.env` file** | `envfile` | — | `NAME=VALUE` line, idempotent rewrite. Mode `0600`. Cross-platform (works on Windows). |
 
 ---
 
@@ -364,19 +365,42 @@ See [`examples/keyrotate.toml`](examples/keyrotate.toml) for the full Prompto co
 
 ## Roadmap
 
-**v0.3 (next):**
-- More provider verifiers (Anthropic, AWS, Cloudflare, Dropbox, Google OAuth, GitHub PATs)
-- `keyrotate verify-all` — re-verify every key in `keyrotate.toml` (read-only health check)
-- `keyrotate doctor` — diagnose missing CLIs / auth / scopes
+### Shipped — v00.00.19 (current)
 
-**v0.4:**
-- Bitwarden + LastPass destinations
-- Slack notifications on rotation outcome
-- Scheduled rotations via cron / GitHub Actions
+**Discovery & onboarding**
+- `keyrotate discover` — read-only scan of `.env` / 1Password / Bitwarden for existing keys, with masked previews and provider guesses
+- `keyrotate import <name>` — first-time import of an existing key (verifies against provider, writes to all destinations, skips the "revoke old?" prompt)
+- `keyrotate self-check` — runs `doctor` + `discover` + `check-rotations` in one pass (ideal cron entry)
+- `keyrotate add-custom <id>` — interactive wizard that writes a `[providers.custom.<id>]` block in 30 seconds
 
-**v1.0:**
-- Stable plugin API for providers and destinations
-- Homebrew core formula
+**Auto-rotation**
+- `Provider.create(oldKey)` capability added to the plugin interface
+- Implemented for **Resend** and **PostHog** (both have public PAT-mints-PAT APIs)
+- `keyrotate auto-rotate <name>` — zero-prompt rotation: read old key from 1Password → call provider.create() → verify → write everywhere
+
+**Reminders**
+- `rotate_every = "90d"` policy per rotation
+- `keyrotate check-rotations` — read-only check that prints OK / SOON / DUE / OVERDUE / NEVER per rotation, exits non-zero when attention is needed
+- `--email` flag sends a summary via the user's own Resend key (zero infrastructure on our side)
+
+**OAuth**
+- `keyrotate github-oauth <client-id>` — full OAuth device flow against github.com using a user-supplied OAuth App. Returns an OAuth user token (works as Bearer auth for most REST API calls).
+
+**Destinations**
+- Bitwarden destination plugin (headless-friendly, recommended for server use)
+
+**Distribution**
+- Homebrew tap (`brew install Prompto-Studio/homebrew-tap/keyrotate`)
+- npm package (`npx keyrotate setup`, `npm install -g keyrotate`)
+- Windows x64 binary (cross-compiled by Bun)
+- Curl install script
+
+### v00.00.20+ (next)
+
+- Auto-rotation for Stripe restricted keys, Netlify PATs, Fly.io tokens, Supabase Mgmt — each via the provider's own OAuth / management flow
+- Google Cloud OAuth device flow for service-account-key creation
+- Optional Slack / Discord notifications on rotation outcome
+- Stable plugin API + Homebrew-core submission
 
 ---
 
