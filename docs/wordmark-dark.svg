@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 220" fill="none" role="img" aria-label="keyrotate">
+  <title>keyrotate</title>
+  <g transform="translate(28, 12) scale(0.62)">
+    <g stroke="#F8FAFC" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="128" cy="76" r="36"/>
+      <path d="M 128 112 L 128 140 A 38 38 0 1 1 90 178"/>
+      <path d="M 128 132 L 152 132"/>
+      <path d="M 128 148 L 144 148"/>
+    </g>
+    <path d="M 90 158 L 74 184 L 106 184 Z" fill="#F8FAFC"/>
+  </g>
+  <text x="210" y="148"
+        font-family="ui-monospace, 'JetBrains Mono', 'IBM Plex Mono', Menlo, Consolas, monospace"
+        font-size="112" font-weight="700" fill="#F8FAFC" letter-spacing="-3.5">keyrotate</text>
+</svg>

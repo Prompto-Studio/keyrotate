@@ -1,6 +1,9 @@
 <div align="center">
 
-<img src="docs/wordmark.svg" alt="keyrotate" width="420"/>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/wordmark-dark.svg">
+  <img src="docs/wordmark.svg" alt="keyrotate" width="420"/>
+</picture>
 
 ### Rotate any API key in one command. Update 1Password, GitHub, Supabase, Netlify, Fly.io, and your `.env` in one shot — verified end-to-end.
 
