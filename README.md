@@ -197,13 +197,33 @@ Then run `keyrotate setup` (interactive wizard) or `keyrotate init` (write a sta
 
 ## Quick start
 
+If you're new and don't even know what you have:
+
 ```bash
 cd /path/to/your/project
 keyrotate init                  # scaffolds keyrotate.toml
-$EDITOR keyrotate.toml          # define your rotations
+keyrotate discover              # scan .env / 1Password / Bitwarden for existing keys (read-only)
+$EDITOR keyrotate.toml          # define a rotation for each key you found
+keyrotate import <name>         # bring an existing key under management (first-time)
+keyrotate self-check            # doctor + discover + check-rotations in one pass
+```
+
+Day-to-day:
+
+```bash
 keyrotate list                  # show all rotations
-keyrotate rotate <name>         # rotate a key (interactive)
+keyrotate rotate <name>         # interactive rotation (paste new key)
+keyrotate auto-rotate <name>    # zero-prompt rotation (Resend / PostHog)
 keyrotate audit                 # show rotation history
+keyrotate check-rotations       # see what's due (great in a daily cron)
+```
+
+For a long-tail provider keyrotate doesn't know natively:
+
+```bash
+keyrotate add-custom mailgun    # 30-second wizard, writes a [providers.custom.mailgun] block
+keyrotate verify mailgun        # try the verifier without rotating
+keyrotate rotate mailgun        # rotate when you're ready
 ```
 
 ---
